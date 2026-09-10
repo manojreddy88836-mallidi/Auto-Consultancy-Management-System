@@ -2,12 +2,12 @@ import React, { useState, useMemo } from 'react';
 import { Calculator, IndianRupee, Percent, Calendar, TrendingUp, RefreshCw } from 'lucide-react';
 import { calculateEMI, fmtINR } from '../../utils/emiCalculator';
 
-// Examples now use months directly
+// Quick examples — rate is % per MONTH
 const TEST_CASES = [
-  { label: 'Example 1', principal: 15000,   rate: 2,  months: 12, desc: 'Rs.15K @ 2% x 12 mo' },
-  { label: 'Example 2', principal: 100000,  rate: 10, months: 60, desc: 'Rs.1L @ 10% x 60 mo'  },
-  { label: 'Example 3', principal: 50000,   rate: 0,  months: 24, desc: 'Rs.50K @ 0% x 24 mo'  },
-  { label: 'Example 4', principal: 200000,  rate: 12, months: 36, desc: 'Rs.2L @ 12% x 36 mo'  },
+  { label: 'Example 1', principal: 60000,  rate: 2,   months: 12, desc: 'Rs.60K @ 2%/mo x 12 mo'  },
+  { label: 'Example 2', principal: 100000, rate: 2,   months: 24, desc: 'Rs.1L @ 2%/mo x 24 mo'    },
+  { label: 'Example 3', principal: 50000,  rate: 1.5, months: 12, desc: 'Rs.50K @ 1.5%/mo x 12 mo' },
+  { label: 'Example 4', principal: 200000, rate: 2,   months: 36, desc: 'Rs.2L @ 2%/mo x 36 mo'    },
 ];
 
 export default function EmiCalculatorPage() {
