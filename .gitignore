@@ -1,0 +1,88 @@
+# =============================================================
+# Auto Consultancy Management System — Root .gitignore
+# =============================================================
+
+# -------------------------------------------------------
+# User-uploaded documents (never commit user data)
+# -------------------------------------------------------
+uploads/
+!uploads/.gitkeep
+
+# -------------------------------------------------------
+# Build artifacts
+# -------------------------------------------------------
+backend/target/
+frontend/dist/
+frontend/dist-ssr/
+
+# -------------------------------------------------------
+# Node / npm
+# -------------------------------------------------------
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -------------------------------------------------------
+# Environment / secrets (NEVER commit)
+# -------------------------------------------------------
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# -------------------------------------------------------
+# Java / Maven
+# -------------------------------------------------------
+*.class
+*.jar
+*.war
+*.ear
+!**/src/main/**/target/
+!**/src/test/**/target/
+hs_err_pid*
+replay_pid*
+
+# -------------------------------------------------------
+# IDE / editor
+# -------------------------------------------------------
+.idea/
+*.iml
+*.iws
+.eclipse/
+.project
+.classpath
+.settings/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# -------------------------------------------------------
+# OS
+# -------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# -------------------------------------------------------
+# Logs
+# -------------------------------------------------------
+*.log
+logs/
+
+# -------------------------------------------------------
+# Docker volumes (if using local bind-mounts)
+# -------------------------------------------------------
+mysql-data/
