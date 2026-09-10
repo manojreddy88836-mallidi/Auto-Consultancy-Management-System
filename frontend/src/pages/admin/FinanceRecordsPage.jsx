@@ -68,7 +68,7 @@ function EmiCalculatorPanel({ onClose }) {
           </div>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-blue-200 mb-1">Annual Interest Rate (%)</label>
+          <label className="block text-xs font-semibold text-blue-200 mb-1">Monthly Interest Rate (% per month)</label>
           <input type="number" value={rate} onChange={e => setRate(e.target.value)}
             placeholder="0 for no interest" className={inputCls + ' bg-white text-gray-800'} min="0" step="0.1" />
         </div>
@@ -111,9 +111,9 @@ function EmiCalculatorPanel({ onClose }) {
 
       <div className="mt-4 pt-4 border-t border-white/10">
         <p className="text-[10px] text-blue-300 font-mono">
-          Interest = P × (Rate/100) × (Months/12) | Total = P + Interest | EMI = Total ÷ Months
+          Interest = P × (Rate/100) × Months | Total = P + Interest | EMI = Total ÷ Months
         </p>
-        <p className="text-[10px] text-blue-400 mt-1">Full/Flat Interest — Tenure in Months (entered directly)</p>
+        <p className="text-[10px] text-blue-400 mt-1">Full/Flat Interest — Rate is % per month — Tenure in Months</p>
       </div>
     </div>
   );
@@ -390,7 +390,7 @@ const FinanceRecordsPage = () => {
 
                       {/* Rate / Tenure */}
                       <td className="px-4 py-4 text-gray-500 text-xs whitespace-nowrap">
-                        {fd.annualInterestRate != null ? `${fd.annualInterestRate}% p.a.` : '—'}
+                        {fd.annualInterestRate != null ? `${fd.annualInterestRate}% p.m.` : '-'}
                         {(fd.tenureMonths || fd.tenureYears) && (
                           <span className="block text-gray-400">
                             {fd.tenureMonths ? `${fd.tenureMonths} mo` : `${fd.tenureYears * 12} mo`}
@@ -516,9 +516,9 @@ const FinanceRecordsPage = () => {
           <TrendingUp size={12}/> EMI Formula (Full/Flat Interest)
         </p>
         <p className="text-xs text-gray-400 font-mono">
-          Interest = P × (Rate/100) × (Months/12) &nbsp;|&nbsp;
+          Interest = P × (Rate/100) × Months &nbsp;|&nbsp;
           Total = P + Interest &nbsp;|&nbsp;
-          EMI = Total ÷ Months
+          EMI = Total ÷ Months &nbsp;<span className="text-blue-500 font-semibold">[Rate = % per month]</span>
         </p>
         <p className="text-xs text-gray-400 mt-1">
           Zero interest: EMI = Principal ÷ Months. &nbsp;

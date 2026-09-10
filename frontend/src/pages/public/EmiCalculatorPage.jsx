@@ -89,7 +89,7 @@ export default function EmiCalculatorPage() {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                    Annual Interest Rate (%)
+                    Monthly Interest Rate (% per month)
                     <span className="text-xs font-normal text-gray-400 ml-2">Leave 0 for no interest</span>
                   </label>
                   <div className="relative">
@@ -140,7 +140,7 @@ export default function EmiCalculatorPage() {
                       { label: 'Total Payable',  value: fmtINR(result.totalPayable),              id: 'emi-total-payable',  cls: 'text-gray-800' },
                       { label: 'Total Interest', value: fmtINR(result.totalInterest),              id: 'emi-total-interest', cls: 'text-orange-600' },
                       { label: 'Principal',      value: fmtINR(Number(principal)),                 id: 'emi-principal-disp', cls: 'text-blue-700' },
-                      { label: 'Annual Rate',    value: `${rate || 0}% p.a.`,                      id: 'emi-annual-rate',    cls: 'text-gray-600' },
+                      { label: 'Monthly Rate',   value: `${rate || 0}% p.m.`,                      id: 'emi-monthly-rate',   cls: 'text-gray-600' },
                     ].map(item => (
                       <div key={item.label} className="bg-gray-50 rounded-xl p-3 border border-gray-100 text-center">
                         <p className="text-xs text-gray-500 font-semibold mb-1">{item.label}</p>
@@ -190,14 +190,17 @@ export default function EmiCalculatorPage() {
                 <TrendingUp size={16} className="text-blue-300"/>
                 <h3 className="font-bold text-sm">EMI Formula (Full/Flat Interest)</h3>
               </div>
+              <div className="mb-3 px-3 py-1.5 bg-green-500/20 border border-green-400/30 rounded-lg text-green-300 text-xs font-semibold inline-block">
+                Interest Type: Flat / Full Interest
+              </div>
               <p className="font-mono text-xs leading-6 text-blue-100 bg-white/10 rounded-lg p-3 mb-3">
-                Interest = P × Rate × (Months ÷ 12)<br/>
+                Interest = P × Rate × Months<br/>
                 Total = P + Interest<br/>
                 EMI = Total ÷ Months
               </p>
               <ul className="text-xs text-blue-200 space-y-1">
                 <li><strong className="text-white">P</strong> = Principal (Loan Amount)</li>
-                <li><strong className="text-white">Rate</strong> = Annual Rate / 100</li>
+                <li><strong className="text-white">Rate</strong> = Monthly Rate / 100 &nbsp;<span className="text-green-300">(% per month)</span></li>
                 <li><strong className="text-white">Months</strong> = Tenure in Months</li>
                 <li><strong className="text-white">Rate = 0:</strong> EMI = P / Months</li>
               </ul>
@@ -217,7 +220,7 @@ export default function EmiCalculatorPage() {
                     >
                       <div>
                         <p className="text-xs font-bold text-gray-800 group-hover:text-[#1E88E5]">{ex.desc}</p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">{ex.months} months · {ex.rate}% p.a.</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{ex.months} months · {ex.rate}% p.m.</p>
                       </div>
                       {r.valid && (
                         <span className="text-xs font-bold text-[#1E88E5] bg-blue-50 group-hover:bg-white px-2.5 py-1 rounded-lg whitespace-nowrap">

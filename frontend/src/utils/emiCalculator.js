@@ -3,27 +3,31 @@
  * Used by: EMI Calculator page (public), Finance form (customer),
  *          Finance Records (admin), and backend validation.
  *
- * FORMULA: Full / Flat Interest Method
+ * FORMULA: Full / Flat Interest Method  (Monthly Rate)
  *
- *   Interest     = Principal × (AnnualRate / 100) × (TenureMonths / 12)
+ *   monthlyRate  = MonthlyRatePct / 100          (e.g. 2% → 0.02)
+ *   Interest     = Principal × monthlyRate × TenureMonths
  *   TotalPayable = Principal + Interest
  *   Monthly EMI  = TotalPayable / TenureMonths
+ *
+ * The entered rate is treated as a MONTHLY percentage (% per month).
+ * Example: 2 means 2% per month, NOT 2% per year.
  *
  * ZERO-INTEREST CASE: EMI = Principal / TenureMonths
  */
 
 /**
- * Calculate EMI using the Full/Flat Interest formula.
+ * Calculate EMI using the Full/Flat Interest formula (Monthly Rate).
  *
  * @param {number} principal      - Loan amount (> 0)
- * @param {number} annualRate     - Annual interest rate (%) e.g. 2 for 2%
- * @param {number} tenureMonths   - Loan tenure in MONTHS   e.g. 12, 24, 36, 60
+ * @param {number} monthlyRate    - Monthly interest rate (% per month) e.g. 2 for 2%/month
+ * @param {number} tenureMonths   - Loan tenure in MONTHS e.g. 12, 24, 36, 60
  * @returns {{ emi, totalPayable, totalInterest, totalMonths, valid, error }}
  */
-export function calculateEMI(principal, annualRate, tenureMonths) {
+export function calculateEMI(principal, monthlyRate, tenureMonths) {
   // Input coercion
   const P = Number(principal);
-  const R = Number(annualRate);
+  const R = Number(monthlyRate);   // % per month, e.g. 2 = 2% per month
   const n = Math.round(Number(tenureMonths)); // total months — must be integer
 
   // Validation
@@ -34,10 +38,11 @@ export function calculateEMI(principal, annualRate, tenureMonths) {
   if (!isFinite(n) || n < 1)
     return { valid: false, error: 'Tenure must be at least 1 month.' };
 
-  // Full / Flat Interest calculation
-  // Interest is always on the ORIGINAL principal for the full tenure
-  const tenureYears   = n / 12;
-  const totalInterest = P * (R / 100) * tenureYears;  // flat — not reducing
+  // Full / Flat Interest (Monthly Rate) calculation
+  // Interest is always on the ORIGINAL principal for the COMPLETE tenure
+  // Rate is monthly %, so no /12 conversion needed
+  const rateDecimal   = R / 100;          // e.g. 2% → 0.02
+  const totalInterest = P * rateDecimal * n; // P × r × n  (flat, not reducing)
   const totalPayable  = P + totalInterest;
   const emi           = totalPayable / n;
 
@@ -47,7 +52,7 @@ export function calculateEMI(principal, annualRate, tenureMonths) {
     totalPayable:  round2(totalPayable),
     totalInterest: round2(totalInterest),
     totalMonths:   n,
-    monthlyRate:   0, // not applicable for flat interest; kept for API compat
+    monthlyRate:   R, // monthly rate in %
   };
 }
 
