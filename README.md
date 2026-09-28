@@ -229,8 +229,8 @@ POST /api/auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@autoconsultancy.com",
-  "password": "Admin@123"
+  "email": "admin@yourconsultancy.com",
+  "password": "<your-admin-password>"
 }
 ```
 
