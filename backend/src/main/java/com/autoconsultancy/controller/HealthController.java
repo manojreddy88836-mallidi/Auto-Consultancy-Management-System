@@ -5,18 +5,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
+/**
+ * Minimal health check endpoint. Returns only {"status":"UP"}.
+ * No internal details, version info, or timestamps are exposed.
+ */
 @RestController
 @RequestMapping("/api/health")
 public class HealthController {
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> healthCheck() {
-        return ResponseEntity.ok(Map.of(
-                "status", "UP",
-                "timestamp", LocalDateTime.now()
-        ));
+    public ResponseEntity<Map<String, String>> healthCheck() {
+        return ResponseEntity.ok(Map.of("status", "UP"));
     }
 }

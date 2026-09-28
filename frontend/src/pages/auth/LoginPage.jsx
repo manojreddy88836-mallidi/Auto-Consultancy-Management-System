@@ -17,10 +17,15 @@ const LoginPage = () => {
     setError('');
   };
 
+  // Demo mode: fill email only — user must enter their own password
+  // NOTE: Do NOT hardcode passwords in frontend source code
   const fillDemo = (role) => {
-    if (role === 'admin') setFormData({ email: 'admin@autoconsultancy.com', password: 'Admin@123' });
-    else if (role === 'worker') setFormData({ email: 'worker1@autoconsultancy.com', password: 'Worker@123' });
-    else setFormData({ email: 'customer@autoconsultancy.com', password: 'Customer@123' });
+    const emails = {
+      admin:    'admin@autoconsultancy.com',
+      worker:   'worker1@autoconsultancy.com',
+      customer: 'sectest@example.com',
+    };
+    setFormData(prev => ({ ...prev, email: emails[role] || '', password: '' }));
   };
 
   const handleSubmit = async (e) => {

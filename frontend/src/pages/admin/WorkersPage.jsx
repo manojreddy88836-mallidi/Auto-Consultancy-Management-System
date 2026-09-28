@@ -23,7 +23,7 @@ const WorkersPage = () => {
   const [saving, setSaving]         = useState(false);
   const [form, setForm]             = useState({
     firstName:'', lastName:'', email:'', phone:'',
-    employeeId:'', department:'', designation:'', password:'Worker@123',
+    employeeId:'', department:'', designation:'', password:'',
   });
 
   const fetchWorkers = useCallback(async () => {
@@ -40,7 +40,7 @@ const WorkersPage = () => {
 
   const openAdd = () => {
     setEditingWorker(null);
-    setForm({ firstName:'', lastName:'', email:'', phone:'', employeeId:'', department:'', designation:'', password:'Worker@123' });
+    setForm({ firstName:'', lastName:'', email:'', phone:'', employeeId:'', department:'', designation:'', password:'' });
     setIsModalOpen(true);
   };
 

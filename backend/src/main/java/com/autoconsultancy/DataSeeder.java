@@ -33,14 +33,23 @@ public class DataSeeder {
     private final PasswordEncoder passwordEncoder;
     private final SequenceGeneratorService sequenceGenerator;
 
+    @org.springframework.beans.factory.annotation.Value("${SEED_ADMIN_EMAIL:admin@autoconsultancy.com}")
+    private String adminEmail;
+
+    @org.springframework.beans.factory.annotation.Value("${SEED_ADMIN_PASSWORD:Admin@123}")
+    private String adminPassword;
+
+    @org.springframework.beans.factory.annotation.Value("${SEED_WORKER_PASSWORD:Worker@123}")
+    private String workerPassword;
+
     @EventListener(ApplicationReadyEvent.class)
     public void seedData() {
-        if (!userRepository.findByEmail("admin@autoconsultancy.com").isPresent()) {
+        if (!userRepository.findByEmail(adminEmail).isPresent()) {
             long adminId = sequenceGenerator.generateSequence("users");
             User admin = User.builder()
                     .id(adminId)
-                    .email("admin@autoconsultancy.com")
-                    .password(passwordEncoder.encode("Admin@123"))
+                    .email(adminEmail)
+                    .password(passwordEncoder.encode(adminPassword))
                     .firstName("Super")
                     .lastName("Admin")
                     .role(Role.ADMIN)
@@ -48,9 +57,9 @@ public class DataSeeder {
                     .build();
             userRepository.save(admin);
 
-            seedWorker("worker1@autoconsultancy.com", "Worker@123", "Worker", "One", "EMP1001", "Operations", "Senior Consultant");
-            seedWorker("worker2@autoconsultancy.com", "Worker@123", "Worker", "Two", "EMP1002", "Finance", "Finance Analyst");
-            seedWorker("worker3@autoconsultancy.com", "Worker@123", "Worker", "Three", "EMP1003", "Verification", "Document Specialist");
+            seedWorker("worker1@autoconsultancy.com", workerPassword, "Worker", "One", "EMP1001", "Operations", "Senior Consultant");
+            seedWorker("worker2@autoconsultancy.com", workerPassword, "Worker", "Two", "EMP1002", "Finance", "Finance Analyst");
+            seedWorker("worker3@autoconsultancy.com", workerPassword, "Worker", "Three", "EMP1003", "Verification", "Document Specialist");
         }
 
         ensureDefaultUsersActive();

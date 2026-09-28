@@ -190,14 +190,25 @@ docker-compose down -v
 
 ## Default Login Credentials
 
-> ⚠️ **Change these passwords in production!**
+> ⚠️ **Credentials are set via environment variables. See `.env.example` for the full list.**
+>
+> **Do NOT hardcode real passwords anywhere** — not in source code, README, or commit messages.
 
-| Role | Email | Password |
+Set these environment variables before starting the backend for the first time:
+
+```bash
+SEED_ADMIN_EMAIL=admin@yourconsultancy.com
+SEED_ADMIN_PASSWORD=<strong-password>      # Min 8 chars, upper+lower+digit+special
+SEED_WORKER_PASSWORD=<strong-password>
+```
+
+The DataSeeder creates these accounts on first startup **only if the admin email doesn't already exist**.
+
+| Role | Email (default) | Password |
 |---|---|---|
-| **Admin** | admin@autoconsultancy.com | Admin@123 |
-| **Worker 1** | worker1@autoconsultancy.com | Worker@123 |
-| **Worker 2** | worker2@autoconsultancy.com | Worker@123 |
-| **Worker 3** | worker3@autoconsultancy.com | Worker@123 |
+| **Admin** | `SEED_ADMIN_EMAIL` env var | `SEED_ADMIN_PASSWORD` env var |
+| **Workers** | worker1/2/3@autoconsultancy.com | `SEED_WORKER_PASSWORD` env var |
+| **Customer** | Register via `/register` | — |
 
 **Customer:** Register a new account via the public registration page at `/register`.
 
@@ -389,10 +400,14 @@ GET http://localhost:8080/api/health
 
 ### Quick API Smoke Test (PowerShell)
 ```powershell
+# Set your credentials (do NOT hardcode passwords in scripts)
+$email    = $env:SEED_ADMIN_EMAIL     # or type: 'admin@autoconsultancy.com'
+$password = $env:SEED_ADMIN_PASSWORD  # or type your admin password
+
 # Login
 $r = Invoke-RestMethod "http://localhost:8080/api/auth/login" `
   -Method POST -ContentType "application/json" `
-  -Body '{"email":"admin@autoconsultancy.com","password":"Admin@123"}'
+  -Body "{`"email`":`"$email`",`"password`":`"$password`"}"
 $token = $r.data.token
 
 # Test brands
