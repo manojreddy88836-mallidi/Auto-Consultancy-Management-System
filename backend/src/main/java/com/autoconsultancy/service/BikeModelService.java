@@ -109,10 +109,14 @@ public class BikeModelService {
         BikeModel.SaleStatus status = model.getSaleStatus() != null ? model.getSaleStatus() : BikeModel.SaleStatus.NOT_FOR_SALE;
         boolean forSale = model.getAvailableForSale() != null ? model.getAvailableForSale() : false;
 
+        Manufacturer mfr = model.getManufacturer();
+        Long mfrId = mfr != null ? mfr.getId() : null;
+        String mfrName = mfr != null ? mfr.getName() : "Unknown";
+
         return BikeModelResponse.builder()
                 .id(model.getId())
-                .manufacturerId(model.getManufacturer().getId())
-                .manufacturerName(model.getManufacturer().getName())
+                .manufacturerId(mfrId)
+                .manufacturerName(mfrName)
                 .modelName(model.getModelName())
                 .category(model.getCategory())
                 .fuelType(model.getFuelType())

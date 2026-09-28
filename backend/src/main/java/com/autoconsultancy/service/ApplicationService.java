@@ -581,36 +581,37 @@ public class ApplicationService {
         return mapToSummary(applicationRepository.save(app));
     }
 
-    @Transactional(readOnly = true)
     public Page<ApplicationResponse> getAll(Pageable pageable, String status, String search) {
-        org.springframework.data.jpa.domain.Specification<Application> spec =
-            org.springframework.data.jpa.domain.Specification.where(null);
+        List<Application> list = applicationRepository.findAll();
 
         if (status != null && !status.isBlank()) {
             try {
                 Application.ApplicationStatus s = Application.ApplicationStatus.valueOf(status);
-                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), s));
+                list = list.stream().filter(a -> a.getStatus() == s).collect(Collectors.toList());
             } catch (IllegalArgumentException ignored) {}
         }
 
         if (search != null && !search.isBlank()) {
-            String pattern = "%" + search.toLowerCase() + "%";
-            spec = spec.and((root, query, cb) -> {
-                var customer  = root.join("customer",   jakarta.persistence.criteria.JoinType.LEFT);
-                var user      = customer.join("user",   jakarta.persistence.criteria.JoinType.LEFT);
-                var bikeDetail = root.join("bikeDetail", jakarta.persistence.criteria.JoinType.LEFT);
-                return cb.or(
-                    cb.like(cb.lower(root.get("applicationNumber")),         pattern),
-                    cb.like(cb.lower(user.get("firstName")),                 pattern),
-                    cb.like(cb.lower(user.get("lastName")),                  pattern),
-                    cb.like(cb.lower(user.get("email")),                     pattern),
-                    cb.like(cb.lower(cb.coalesce(user.get("phone"), "")),    pattern),
-                    cb.like(cb.lower(cb.coalesce(bikeDetail.get("registrationNumber"), "")), pattern)
-                );
-            });
+            String term = search.toLowerCase();
+            list = list.stream().filter(a -> {
+                boolean matchAppNo = a.getApplicationNumber() != null && a.getApplicationNumber().toLowerCase().contains(term);
+                boolean matchCust = a.getCustomer() != null && a.getCustomer().getUser() != null &&
+                        ((a.getCustomer().getUser().getFirstName() != null && a.getCustomer().getUser().getFirstName().toLowerCase().contains(term)) ||
+                         (a.getCustomer().getUser().getLastName() != null && a.getCustomer().getUser().getLastName().toLowerCase().contains(term)) ||
+                         (a.getCustomer().getUser().getEmail() != null && a.getCustomer().getUser().getEmail().toLowerCase().contains(term)) ||
+                         (a.getCustomer().getUser().getPhone() != null && a.getCustomer().getUser().getPhone().toLowerCase().contains(term)));
+                boolean matchReg = a.getBikeDetail() != null && a.getBikeDetail().getRegistrationNumber() != null &&
+                        a.getBikeDetail().getRegistrationNumber().toLowerCase().contains(term);
+                return matchAppNo || matchCust || matchReg;
+            }).collect(Collectors.toList());
         }
 
-        return applicationRepository.findAll(spec, pageable).map(this::mapToSummary);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+        List<ApplicationResponse> content = (start <= list.size()) ?
+                list.subList(start, end).stream().map(this::mapToSummary).collect(Collectors.toList()) : java.util.Collections.emptyList();
+
+        return new org.springframework.data.domain.PageImpl<>(content, pageable, list.size());
     }
     
     @Transactional(readOnly = true)

@@ -1,13 +1,12 @@
 package com.autoconsultancy.repository;
 
 import com.autoconsultancy.entity.ManufacturingYear;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface ManufacturingYearRepository extends JpaRepository<ManufacturingYear, Long>, JpaSpecificationExecutor<ManufacturingYear> {
+public interface ManufacturingYearRepository extends MongoRepository<ManufacturingYear, Long> {
     List<ManufacturingYear> findByBikeModelIdAndActiveTrue(Long modelId);
 }

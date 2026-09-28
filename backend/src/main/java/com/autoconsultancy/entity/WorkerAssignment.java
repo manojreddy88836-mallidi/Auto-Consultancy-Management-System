@@ -1,13 +1,14 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "worker_assignments")
+@Document(collection = "worker_assignments")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,20 +17,16 @@ import java.time.LocalDateTime;
 public class WorkerAssignment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id")
+    @DBRef
     @JsonIgnore
     private Application application;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "worker_id")
+    @DBRef
     private Worker worker;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_by_user_id")
+    @DBRef
     private User assignedBy;
 
     private LocalDateTime assignedAt;

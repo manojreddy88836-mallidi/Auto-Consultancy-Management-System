@@ -1,14 +1,15 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "application_status_history")
+@Document(collection = "application_status_history")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,23 +18,20 @@ import java.time.LocalDateTime;
 public class ApplicationStatusHistory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id")
+    @DBRef
     @JsonIgnore
     private Application application;
 
     private String previousStatus;
     private String newStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "changed_by_user_id")
+    @DBRef
     private User changedBy;
 
     private String remarks;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime changedAt;
 }

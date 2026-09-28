@@ -1,14 +1,16 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "worker_tasks")
+@Document(collection = "worker_tasks")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class WorkerTask {
     public enum TaskType   { REPAIR, COLLECTION, VISIT, RECOVERY }
@@ -19,57 +21,56 @@ public class WorkerTask {
     }
     public enum Priority { LOW, NORMAL, HIGH, URGENT }
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     private Long id;
 
-    @Enumerated(EnumType.STRING) @Column(nullable = false)
     private TaskType taskType;
 
-    @Enumerated(EnumType.STRING) @Column(nullable = false) @Builder.Default
+    @Builder.Default
     private TaskStatus status = TaskStatus.ASSIGNED;
 
-    @Enumerated(EnumType.STRING) @Builder.Default
+    @Builder.Default
     private Priority priority = Priority.NORMAL;
 
-    @Column(nullable = false)
     private String title;
-
-    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "worker_id", nullable = false)
+    @DBRef
     private Worker worker;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "customer_id")
+    @DBRef
     private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "bike_inventory_id")
+    @DBRef
     private BikeInventory bikeInventory;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "application_id")
+    @DBRef
     private Application application;
 
-    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "created_by_user_id")
+    @DBRef
     private User createdBy;
 
     private LocalDate dueDate;
     private LocalDateTime completedAt;
 
-    @Column(columnDefinition = "TEXT") private String adminNotes;
-    @Column(columnDefinition = "TEXT") private String workerNotes;
+    private String adminNotes;
+    private String workerNotes;
 
-    @OneToOne(mappedBy = "workerTask", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @DBRef
     private ServiceJob serviceJob;
 
-    @OneToOne(mappedBy = "workerTask", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @DBRef
     private PaymentCollection paymentCollection;
 
-    @OneToOne(mappedBy = "workerTask", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @DBRef
     private FieldVisit fieldVisit;
 
-    @OneToOne(mappedBy = "workerTask", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @DBRef
     private BikeRecovery bikeRecovery;
 
-    @CreationTimestamp private LocalDateTime createdAt;
-    @UpdateTimestamp   private LocalDateTime updatedAt;
+    @CreatedDate
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

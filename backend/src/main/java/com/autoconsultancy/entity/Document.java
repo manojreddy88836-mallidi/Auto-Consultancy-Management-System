@@ -1,14 +1,14 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "documents")
+@org.springframework.data.mongodb.core.mapping.Document(collection = "documents")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -17,16 +17,13 @@ import java.time.LocalDateTime;
 public class Document {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id")
+    @DBRef
     @JsonIgnore
     private Application application;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "uploaded_by_user_id")
+    @DBRef
     private User uploadedByUser;
 
     private String documentType;
@@ -38,12 +35,11 @@ public class Document {
     private String status;
     private String remarks;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime uploadedAt;
 
     private LocalDateTime reviewedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reviewed_by_user_id")
+    @DBRef
     private User reviewedBy;
 }

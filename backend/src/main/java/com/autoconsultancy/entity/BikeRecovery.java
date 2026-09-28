@@ -1,29 +1,33 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity @Table(name = "bike_recoveries")
+@Document(collection = "bike_recoveries")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class BikeRecovery {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "worker_task_id", nullable = false)
+    @DBRef
     private WorkerTask workerTask;
 
-    @Column(precision = 12, scale = 2) private BigDecimal outstandingAmount;
-    @Column(columnDefinition = "TEXT") private String reason;
+    private BigDecimal outstandingAmount;
+    private String reason;
     private String authorizationNumber;
     private LocalDate recoveryDate;
     private String bikeCondition;
     private Integer currentMileage;
-    @Column(columnDefinition = "TEXT") private String existingDamage;
+    private String existingDamage;
     private boolean accessoriesReceived;
     private boolean keysReceived;
     private boolean documentsReceived;
-    @Column(columnDefinition = "TEXT") private String workerRecoveryNotes;
+    private String workerRecoveryNotes;
     private boolean customerAcknowledged;
 }

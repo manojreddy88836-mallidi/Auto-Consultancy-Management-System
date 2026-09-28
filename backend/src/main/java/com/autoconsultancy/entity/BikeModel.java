@@ -1,18 +1,19 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "bike_models")
+@Document(collection = "bike_models")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,52 +26,42 @@ public class BikeModel {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "manufacturer_id", nullable = false)
+    @DBRef
     @JsonIgnore
     private Manufacturer manufacturer;
 
-    @Column(nullable = false)
     private String modelName;
-
     private String category;
     private String fuelType;
 
     @Builder.Default
     private boolean active = true;
 
-    // ── Sale Availability ──────────────────────────────────────────────────
     @Builder.Default
-    @Column(name = "available_for_sale")
     private Boolean availableForSale = false;
 
     @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "sale_status")
     private SaleStatus saleStatus = SaleStatus.NOT_FOR_SALE;
 
-    private BigDecimal price;  // optional price field
+    private BigDecimal price;
 
-    // ── Timestamps ─────────────────────────────────────────────────────────
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    // ── Relations ──────────────────────────────────────────────────────────
-    @OneToMany(mappedBy = "bikeModel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @DBRef
     @Builder.Default
     private List<BikeVariant> variants = new ArrayList<>();
 
-    @OneToMany(mappedBy = "bikeModel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @DBRef
     @Builder.Default
     private List<ManufacturingYear> manufacturingYears = new ArrayList<>();
 
-    @OneToMany(mappedBy = "bikeModel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @DBRef
     @Builder.Default
     private List<BikeImage> images = new ArrayList<>();
 }

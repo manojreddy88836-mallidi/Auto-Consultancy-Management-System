@@ -77,6 +77,7 @@ public class AuthService {
         user = userRepository.save(user);
 
         Customer customer = Customer.builder()
+                .id(user.getId())
                 .user(user)
                 .profileComplete(false)
                 .build();

@@ -1,25 +1,29 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity @Table(name = "field_visits")
+@Document(collection = "field_visits")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class FieldVisit {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "worker_task_id", nullable = false)
+    @DBRef
     private WorkerTask workerTask;
 
     private LocalDate visitDate;
     private boolean customerContacted;
-    @Column(precision = 12, scale = 2) private BigDecimal amountCollected;
+    private BigDecimal amountCollected;
     private LocalDate promiseToPayDate;
-    @Column(precision = 12, scale = 2) private BigDecimal promiseAmount;
-    @Column(columnDefinition = "TEXT") private String customerResponse;
-    @Column(columnDefinition = "TEXT") private String locationNotes;
-    @Column(columnDefinition = "TEXT") private String outcomeNotes;
+    private BigDecimal promiseAmount;
+    private String customerResponse;
+    private String locationNotes;
+    private String outcomeNotes;
 }

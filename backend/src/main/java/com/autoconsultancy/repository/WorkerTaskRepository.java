@@ -2,25 +2,22 @@ package com.autoconsultancy.repository;
 
 import com.autoconsultancy.entity.WorkerTask;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public interface WorkerTaskRepository extends JpaRepository<WorkerTask, Long> {
+@Repository
+public interface WorkerTaskRepository extends MongoRepository<WorkerTask, Long> {
 
     Page<WorkerTask> findByWorkerIdOrderByCreatedAtDesc(Long workerId, Pageable pageable);
 
     List<WorkerTask> findByWorkerIdAndDueDateOrderByPriorityDesc(Long workerId, LocalDate date);
-
-    @Query("SELECT t FROM WorkerTask t WHERE t.worker.id = :wid AND (:type IS NULL OR t.taskType = :type) AND (:status IS NULL OR t.status = :status) ORDER BY t.createdAt DESC")
-    Page<WorkerTask> findByWorkerIdFiltered(@Param("wid") Long workerId,
-                                            @Param("type") WorkerTask.TaskType type,
-                                            @Param("status") WorkerTask.TaskStatus status,
-                                            Pageable pageable);
 
     long countByWorkerIdAndStatus(Long workerId, WorkerTask.TaskStatus status);
     long countByWorkerIdAndTaskType(Long workerId, WorkerTask.TaskType type);
@@ -28,9 +25,26 @@ public interface WorkerTaskRepository extends JpaRepository<WorkerTask, Long> {
 
     Page<WorkerTask> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
-    @Query("SELECT t FROM WorkerTask t WHERE (:type IS NULL OR t.taskType = :type) AND (:status IS NULL OR t.status = :status) AND (:workerId IS NULL OR t.worker.id = :workerId) ORDER BY t.createdAt DESC")
-    Page<WorkerTask> findAllFiltered(@Param("type") WorkerTask.TaskType type,
-                                     @Param("status") WorkerTask.TaskStatus status,
-                                     @Param("workerId") Long workerId,
-                                     Pageable pageable);
+    default Page<WorkerTask> findByWorkerIdFiltered(Long workerId, WorkerTask.TaskType type, WorkerTask.TaskStatus status, Pageable pageable) {
+        List<WorkerTask> list = findAll().stream()
+                .filter(t -> t.getWorker() != null && workerId.equals(t.getWorker().getId()))
+                .collect(Collectors.toList());
+        if (type != null) list = list.stream().filter(t -> t.getTaskType() == type).collect(Collectors.toList());
+        if (status != null) list = list.stream().filter(t -> t.getStatus() == status).collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+        List<WorkerTask> content = (start <= list.size()) ? list.subList(start, end) : Collections.emptyList();
+        return new PageImpl<>(content, pageable, list.size());
+    }
+
+    default Page<WorkerTask> findAllFiltered(WorkerTask.TaskType type, WorkerTask.TaskStatus status, Long workerId, Pageable pageable) {
+        List<WorkerTask> list = findAll();
+        if (workerId != null) list = list.stream().filter(t -> t.getWorker() != null && workerId.equals(t.getWorker().getId())).collect(Collectors.toList());
+        if (type != null) list = list.stream().filter(t -> t.getTaskType() == type).collect(Collectors.toList());
+        if (status != null) list = list.stream().filter(t -> t.getStatus() == status).collect(Collectors.toList());
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+        List<WorkerTask> content = (start <= list.size()) ? list.subList(start, end) : Collections.emptyList();
+        return new PageImpl<>(content, pageable, list.size());
+    }
 }

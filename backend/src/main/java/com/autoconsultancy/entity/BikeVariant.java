@@ -1,11 +1,12 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "bike_variants")
+@Document(collection = "bike_variants")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,11 +15,9 @@ import lombok.*;
 public class BikeVariant {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bike_model_id")
+    @DBRef
     @JsonIgnore
     private BikeModel bikeModel;
 

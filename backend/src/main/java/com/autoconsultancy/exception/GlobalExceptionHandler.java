@@ -1,7 +1,8 @@
 package com.autoconsultancy.exception;
 
 import com.autoconsultancy.dto.response.ApiResponse;
-import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -11,11 +12,10 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -63,14 +63,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Handle JPA EntityNotFoundException separately so orphaned FK references
-     * (e.g. a deleted BikeVariant still referenced by bike_details) return a
-     * clean 404 instead of a raw 500 with the full exception message.
-     */
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleEntityNotFoundException(EntityNotFoundException ex) {
-        log.warn("Entity not found (possible stale reference): {}", ex.getMessage());
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoSuchElementException(NoSuchElementException ex) {
+        log.warn("Element not found: {}", ex.getMessage());
         return new ResponseEntity<>(
                 ApiResponse.error("Referenced record not found. It may have been deleted."),
                 HttpStatus.NOT_FOUND);
@@ -78,7 +73,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex) {
-        // Log the full exception server-side but never expose the stack trace to the client.
         log.error("Unhandled exception: {}", ex.getMessage(), ex);
         return new ResponseEntity<>(
                 ApiResponse.error("An unexpected error occurred. Please try again later."),

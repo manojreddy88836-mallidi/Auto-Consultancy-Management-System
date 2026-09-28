@@ -1,13 +1,12 @@
 package com.autoconsultancy.repository;
 
 import com.autoconsultancy.entity.Notification;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, Long>, JpaSpecificationExecutor<Notification> {
+public interface NotificationRepository extends MongoRepository<Notification, Long> {
     List<Notification> findByUserId(Long userId);
 }

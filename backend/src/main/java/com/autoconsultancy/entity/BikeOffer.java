@@ -1,15 +1,16 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "bike_offers")
+@Document(collection = "bike_offers")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class BikeOffer {
 
@@ -25,62 +26,31 @@ public class BikeOffer {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** The exact physical bike being negotiated */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bike_inventory_id", nullable = false)
+    @DBRef
     private BikeInventory bikeInventory;
 
-    /** Customer who made the offer */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @DBRef
     private Customer customer;
 
-    /** Snapshot of the bike's listed price at offer time — never changes */
-    @Column(name = "listed_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal listedPrice;
-
-    /** Customer's offered price */
-    @Column(name = "offered_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal offeredPrice;
-
-    /** Counter price set by admin/worker (null unless status=COUNTER_OFFER) */
-    @Column(name = "counter_offer_price", precision = 12, scale = 2)
     private BigDecimal counterOfferPrice;
-
-    /**
-     * The final agreed / negotiated price — recorded when deal is closed.
-     * Set to offeredPrice on ACCEPTED, or counterOfferPrice on COUNTER_ACCEPTED.
-     * The bike's listed price (bike_inventory.price) is NEVER modified.
-     */
-    @Column(name = "agreed_price", precision = 12, scale = 2)
     private BigDecimal agreedPrice;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
     @Builder.Default
     private OfferStatus status = OfferStatus.PENDING;
 
-    /** Optional message from the customer */
-    @Column(name = "customer_message", columnDefinition = "TEXT")
     private String customerMessage;
-
-    /** Response note from admin/worker */
-    @Column(name = "admin_response", columnDefinition = "TEXT")
     private String adminResponse;
 
-    /** Who responded (admin or worker user) */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "responded_by_user_id")
+    @DBRef
     private User respondedBy;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at")
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 }

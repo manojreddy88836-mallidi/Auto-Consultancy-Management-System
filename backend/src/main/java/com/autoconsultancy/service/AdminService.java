@@ -87,6 +87,7 @@ public class AdminService {
         user = userRepository.save(user);
 
         Worker worker = Worker.builder()
+                .id(user.getId())
                 .user(user)
                 .employeeId(request.getEmployeeId())
                 .department(request.getDepartment())

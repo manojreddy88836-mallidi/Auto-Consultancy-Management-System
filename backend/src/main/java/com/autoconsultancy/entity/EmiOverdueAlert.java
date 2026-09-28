@@ -1,24 +1,17 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-/**
- * Prevents duplicate overdue notifications.
- * One row per (financeDetailId, overdueStatus, alertMonth).
- * If a row exists for this month+status, no new notification is sent.
- */
-@Entity
-@Table(name = "emi_overdue_alerts", uniqueConstraints = {
-    @UniqueConstraint(
-        name = "uk_emi_overdue_alert",
-        columnNames = {"finance_detail_id", "overdue_status", "alert_month"}
-    )
-})
+@Document(collection = "emi_overdue_alerts")
+@CompoundIndex(name = "uk_emi_overdue_alert", def = "{'financeDetail': 1, 'overdueStatus': 1, 'alertMonth': 1}", unique = true)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,20 +20,15 @@ import java.time.LocalDateTime;
 public class EmiOverdueAlert {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "finance_detail_id", nullable = false)
+    @DBRef
     @JsonIgnore
     private FinanceDetail financeDetail;
 
-    // TWO_MONTHS or CRITICAL
     private String overdueStatus;
-
-    // "YYYY-MM" — one alert per status per month max
     private String alertMonth;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
 }

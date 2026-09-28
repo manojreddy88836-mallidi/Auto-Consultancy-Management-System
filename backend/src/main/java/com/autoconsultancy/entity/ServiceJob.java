@@ -1,32 +1,35 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity @Table(name = "service_jobs")
+@Document(collection = "service_jobs")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ServiceJob {
     public enum PaymentStatus { PENDING, PARTIAL, PAID }
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "worker_task_id", nullable = false)
+    @DBRef
     private WorkerTask workerTask;
 
     private String registrationNumber;
-    @Column(columnDefinition = "TEXT") private String taskDescription;
-    @Column(columnDefinition = "TEXT") private String partsUsed;
-    @Column(precision = 12, scale = 2) private BigDecimal labourCharge;
-    @Column(precision = 12, scale = 2) private BigDecimal partsCharge;
-    @Column(precision = 12, scale = 2) private BigDecimal totalAmount;
+    private String taskDescription;
+    private String partsUsed;
+    private BigDecimal labourCharge;
+    private BigDecimal partsCharge;
+    private BigDecimal totalAmount;
 
-    @Enumerated(EnumType.STRING) @Builder.Default
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
 
     private LocalDate serviceDate;
     private LocalDate completionDate;
-    @Column(columnDefinition = "TEXT") private String notes;
+    private String notes;
 }

@@ -1,16 +1,18 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
-@Table(name = "applications")
+@Document(collection = "applications")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,44 +21,41 @@ import java.util.List;
 public class Application {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Indexed(unique = true)
     private String applicationNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
+    @DBRef
     private Customer customer;
 
-    @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
 
     private String remarks;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     private LocalDateTime submittedAt;
 
-    @OneToOne(mappedBy = "application", cascade = CascadeType.ALL)
+    @DBRef
     private BikeDetail bikeDetail;
 
-    @OneToOne(mappedBy = "application", cascade = CascadeType.ALL)
+    @DBRef
     private FinanceDetail financeDetail;
 
-    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
+    @DBRef
     @Builder.Default
-    private List<Document> documents = new ArrayList<>();
+    private List<com.autoconsultancy.entity.Document> documents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "application", cascade = CascadeType.ALL)
+    @DBRef
     @Builder.Default
     private List<ApplicationStatusHistory> statusHistory = new ArrayList<>();
 
-    @OneToOne(mappedBy = "application", cascade = CascadeType.ALL)
+    @DBRef
     private WorkerAssignment workerAssignment;
 
     public enum ApplicationStatus {

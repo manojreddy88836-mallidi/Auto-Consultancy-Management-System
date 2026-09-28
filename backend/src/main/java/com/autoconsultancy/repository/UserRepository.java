@@ -1,14 +1,15 @@
 package com.autoconsultancy.repository;
 
+import com.autoconsultancy.entity.Role;
 import com.autoconsultancy.entity.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends MongoRepository<User, Long> {
     Optional<User> findByEmail(String email);
-    java.util.List<User> findByRole(com.autoconsultancy.entity.Role role);
+    List<User> findByRole(Role role);
 }

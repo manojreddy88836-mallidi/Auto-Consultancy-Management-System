@@ -1,0 +1,74 @@
+{"_id": 1, "name": "ROYAL ENFIELD", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 2, "name": "TVS", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 3, "name": "BAJAJ", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 4, "name": "HERO", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 5, "name": "HONDA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 6, "name": "YAMAHA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 7, "name": "SUZUKI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 8, "name": "KAWASAKI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 9, "name": "KTM", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 10, "name": "TRIUMPH", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 11, "name": "NORTON", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 12, "name": "BSA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 13, "name": "BRIXTON MOTORCYCLES", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 14, "name": "HARLEY-DAVIDSON", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 15, "name": "INDIAN", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 16, "name": "BMW", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 17, "name": "DUCATI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 18, "name": "MOTO GUZZI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 19, "name": "MOTO MORINI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 20, "name": "APRILIA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 21, "name": "VESPA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 22, "name": "HUSQVARNA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 23, "name": "JAWA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 24, "name": "VINFAST", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 25, "name": "CFMOTO", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 26, "name": "BENELLI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 27, "name": "KEEWAY", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 28, "name": "QJ MOTOR", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 29, "name": "ZONTES", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 30, "name": "ATHER", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 31, "name": "OLA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 32, "name": "VIDA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 33, "name": "AMPERE", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 34, "name": "OKINAWA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 35, "name": "PURE EV", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 36, "name": "REVOLT", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 37, "name": "ULTRAVIOLETTE", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 38, "name": "SIMPLE ENERGY", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 39, "name": "RAPTEE HV", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 40, "name": "MATTER", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 41, "name": "RIVER", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 42, "name": "OBEN", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 43, "name": "BGAUSS", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 44, "name": "EVOLET", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 45, "name": "FERRATO", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 46, "name": "HOP ELECTRIC", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 47, "name": "IVOOMI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 48, "name": "JOY E-BIKE", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 49, "name": "KINETIC", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 50, "name": "KINETIC GREEN", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 51, "name": "LECTRIX", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 52, "name": "NUMEROS", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 53, "name": "ODSSE", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 54, "name": "OPG MOBILITY", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 55, "name": "QUANTUM ENERGY", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 56, "name": "AVORE", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 57, "name": "BOUNCE", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 58, "name": "GEMOPAI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 59, "name": "YO", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 60, "name": "YEZDI", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 61, "name": "LAMBRETTA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 62, "name": "TEST BRAND UPDATED", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 63, "name": "VLF", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 64, "name": "_VERIFY_BRAND_", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 65, "name": "__QA_TEST__", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 66, "name": "__HEALTH_QA__", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 67, "name": "AUDIT_TEST_UPD", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 68, "name": "TEST_MANUF_TMP_UPDATED", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 69, "name": "TEST_TMP_2138871829", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 70, "name": "TestBrand_QA_Updated", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 71, "name": "TempBrandModel_QA", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 72, "name": "TmpDebug", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 73, "name": "FixTest_QA_V2", "_class": "com.autoconsultancy.entity.Manufacturer"}
+{"_id": 74, "name": "FullCycle_Brand_V2", "_class": "com.autoconsultancy.entity.Manufacturer"}

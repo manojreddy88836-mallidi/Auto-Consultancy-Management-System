@@ -1,13 +1,14 @@
 package com.autoconsultancy.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "bike_images")
+@Document(collection = "bike_images")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,28 +17,21 @@ import java.time.LocalDateTime;
 public class BikeImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bike_model_id", nullable = false)
+    @DBRef
     private BikeModel bikeModel;
 
-    @Column(nullable = false)
     private String fileName;
-
     private String originalFileName;
-
-    @Column(nullable = false)
     private String filePath;
 
     @Builder.Default
-    @Column(name = "is_primary")
     private boolean primary = false;
 
     private Long fileSize;
     private String mimeType;
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
 }

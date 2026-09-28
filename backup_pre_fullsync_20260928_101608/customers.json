@@ -1,0 +1,6 @@
+{"_id": 18, "user": {"$ref": "users", "$id": 18}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 23, "user": {"$ref": "users", "$id": 23}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 24, "user": {"$ref": "users", "$id": 24}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 25, "user": {"$ref": "users", "$id": 25}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 26, "user": {"$ref": "users", "$id": 26}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 27, "user": {"$ref": "users", "$id": 27}, "_class": "com.autoconsultancy.entity.Customer"}

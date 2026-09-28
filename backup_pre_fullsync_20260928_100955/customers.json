@@ -1,0 +1,10 @@
+{"_id": 1, "user": {"$ref": "users", "$id": 5}, "profileComplete": false, "updatedAt": {"$date": "2026-09-28T02:37:56.646Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 2, "user": {"$ref": "users", "$id": 6}, "profileComplete": false, "updatedAt": {"$date": "2026-09-28T02:40:42.084Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 7, "user": {"$ref": "users", "$id": 7}, "profileComplete": true, "updatedAt": {"$date": "2026-09-28T02:43:30.966Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 8, "user": {"$ref": "users", "$id": 8}, "profileComplete": true, "updatedAt": {"$date": "2026-09-28T02:43:31.252Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 9, "user": {"$ref": "users", "$id": 9}, "profileComplete": true, "updatedAt": {"$date": "2026-09-28T02:43:31.438Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 10, "user": {"$ref": "users", "$id": 10}, "profileComplete": true, "updatedAt": {"$date": "2026-09-28T02:43:31.588Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 11, "user": {"$ref": "users", "$id": 11}, "profileComplete": true, "updatedAt": {"$date": "2026-09-28T02:43:31.721Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 12, "user": {"$ref": "users", "$id": 12}, "profileComplete": true, "updatedAt": {"$date": "2026-09-28T02:43:31.869Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 13, "user": {"$ref": "users", "$id": 13}, "profileComplete": false, "updatedAt": {"$date": "2026-09-28T02:43:37.282Z"}, "_class": "com.autoconsultancy.entity.Customer"}
+{"_id": 14, "user": {"$ref": "users", "$id": 14}, "profileComplete": false, "updatedAt": {"$date": "2026-09-28T02:44:41.188Z"}, "_class": "com.autoconsultancy.entity.Customer"}

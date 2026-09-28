@@ -1,13 +1,14 @@
 package com.autoconsultancy.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "bike_details")
+@Document(collection = "bike_details")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,30 +17,22 @@ import java.time.LocalDate;
 public class BikeDetail {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "application_id")
+    @DBRef
     @JsonIgnore
     private Application application;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manufacturer_id")
+    @DBRef
     private Manufacturer manufacturer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bike_model_id")
+    @DBRef
     private BikeModel bikeModel;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_id")
+    @DBRef
     private BikeVariant variant;
 
-    /** References the exact physical bike inventory item.
-     *  Populated when a customer applies from Browse Bikes → Apply Now. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "bike_inventory_id")
+    @DBRef
     private BikeInventory bikeInventory;
 
     private Integer manufacturingYear;
