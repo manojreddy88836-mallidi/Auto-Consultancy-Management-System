@@ -1,6 +1,8 @@
 package com.autoconsultancy.config;
 
 import com.autoconsultancy.security.JwtAuthFilter;
+import com.autoconsultancy.security.RateLimitFilter;
+import com.autoconsultancy.security.SecurityHeadersFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
+    private final SecurityHeadersFilter securityHeadersFilter;
     private final UserDetailsService userDetailsService;
     private final CorsConfigurationSource corsConfigurationSource;
 
@@ -54,7 +58,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/brands/public/**").permitAll()
                         .requestMatchers("/api/bike-models/public/**").permitAll()
                         .requestMatchers("/api/bike-models/images/*/file").permitAll()
-                        // Bike Inventory public endpoints
                         .requestMatchers("/api/bikes/public/**").permitAll()
                         .requestMatchers("/api/bikes/*/images/*/file").permitAll()
                         .requestMatchers("/api/health").permitAll()
@@ -69,6 +72,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authenticationProvider(authenticationProvider())
+                // Filters run in declaration order before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(securityHeadersFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -87,8 +93,12 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * BCrypt with strength 12 — strong enough for 2026 hardware while staying
+     * below 500 ms on a typical server (strength 10 = ~100 ms, 12 ≈ 400 ms).
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 }

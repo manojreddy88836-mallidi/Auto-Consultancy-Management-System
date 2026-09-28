@@ -8,6 +8,7 @@ import com.autoconsultancy.exception.BadRequestException;
 import com.autoconsultancy.exception.ResourceNotFoundException;
 import com.autoconsultancy.repository.*;
 import com.autoconsultancy.service.EmiOverdueService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,7 +48,7 @@ public class EmiPaymentController {
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<EmiPaymentResponse>> recordPayment(
-            @RequestBody EmiPaymentRequest req,
+            @Valid @RequestBody EmiPaymentRequest req,
             Authentication auth) {
 
         FinanceDetail fd = financeDetailRepo.findById(req.getFinanceDetailId())

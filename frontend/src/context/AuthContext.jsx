@@ -3,36 +3,58 @@ import * as authApi from '../api/authApi';
 
 export const AuthContext = createContext();
 
+// ── Storage helpers ──────────────────────────────────────────────────────────
+// We keep the JWT in sessionStorage (cleared when the tab closes) rather than
+// localStorage to reduce the window of exposure should an XSS attack occur.
+// The user profile (non-secret metadata) is kept in localStorage so the UI
+// can restore the user's name / role without requiring a fresh network call.
+const STORAGE_TOKEN_KEY = 'ac_token';
+const STORAGE_USER_KEY  = 'ac_user';
+
+const readToken = () => sessionStorage.getItem(STORAGE_TOKEN_KEY);
+const readUser  = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_USER_KEY)); } catch { return null; }
+};
+
+const writeSession = (token, userData) => {
+  sessionStorage.setItem(STORAGE_TOKEN_KEY, token);
+  localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(userData));
+};
+
+const clearSession = () => {
+  sessionStorage.removeItem(STORAGE_TOKEN_KEY);
+  localStorage.removeItem(STORAGE_USER_KEY);
+  // Also clear any legacy keys that may have been set by older versions
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
-    if (storedUser && storedToken) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-      }
+    // Restore session on page reload / tab re-open within same session
+    const storedToken = readToken();
+    const storedUser  = readUser();
+    if (storedToken && storedUser) {
+      setUser({ ...storedUser, token: storedToken });
     }
     setLoading(false);
   }, []);
 
   /**
-   * Backend AuthResponse shape (flat, wrapped in ApiResponse):
-   * { success: true, data: { token, email, role, firstName, lastName } }
-   * We build a normalized user object to store in state + localStorage.
+   * Backend AuthResponse shape (wrapped in ApiResponse):
+   *   { success: true, data: { token, email, role, firstName, lastName } }
    */
   const _handleAuthResponse = (responseData) => {
     const { token, email, role, firstName, lastName } = responseData.data.data;
-    const userData = { token, email, role, firstName, lastName };
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
-    return userData;
+    const userData = { email, role, firstName, lastName };  // no token in localStorage
+    writeSession(token, userData);
+    setUser({ ...userData, token });
+    return { ...userData, token };
   };
 
   const login = async (email, password) => {
@@ -45,25 +67,28 @@ export const AuthProvider = ({ children }) => {
     return _handleAuthResponse(response);
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const logout = async () => {
+    // Revoke the token server-side so it cannot be reused even if captured
+    try {
+      await authApi.logout().catch(() => {/* ignore network error on logout */});
+    } finally {
+      clearSession();
+      setUser(null);
+    }
   };
 
   // Re-sync auth state after profile update (e.g. name change)
   const refreshUser = (updatedFields = null) => {
     if (updatedFields) {
-      // Merge updated fields into stored user
       const current = user || {};
-      const merged = { ...current, ...updatedFields };
-      localStorage.setItem('user', JSON.stringify(merged));
+      const merged  = { ...current, ...updatedFields };
+      const { token, ...nonSecret } = merged;
+      localStorage.setItem(STORAGE_USER_KEY, JSON.stringify(nonSecret));
       setUser(merged);
     } else {
-      try {
-        const stored = localStorage.getItem('user');
-        if (stored) setUser(JSON.parse(stored));
-      } catch { /* ignore */ }
+      const stored = readUser();
+      const token  = readToken();
+      if (stored && token) setUser({ ...stored, token });
     }
   };
 

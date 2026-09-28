@@ -10,6 +10,7 @@ import com.autoconsultancy.dto.response.ApplicationDetailResponse;
 import com.autoconsultancy.dto.response.ApplicationResponse;
 import com.autoconsultancy.dto.response.PageResponse;
 import com.autoconsultancy.service.ApplicationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -61,7 +62,7 @@ public class ApplicationController {
 
     @PutMapping("/{id}/finance-details")
     @PreAuthorize("hasAnyAuthority('CUSTOMER', 'WORKER', 'ADMIN')")
-    public ResponseEntity<ApiResponse<ApplicationResponse>> updateFinanceDetails(@PathVariable Long id, @RequestBody FinanceDetailRequest request, Authentication authentication) {
+    public ResponseEntity<ApiResponse<ApplicationResponse>> updateFinanceDetails(@PathVariable Long id, @Valid @RequestBody FinanceDetailRequest request, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.success(applicationService.updateFinanceDetails(id, request, authentication.getName()), "Updated finance details"));
     }
 
@@ -84,8 +85,11 @@ public class ApplicationController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String search) {
+        // Cap page size to prevent excessive data queries
+        int safeSize = Math.min(Math.max(size, 1), 100);
+        int safePage = Math.max(page, 0);
         PageResponse<ApplicationResponse> pageResponse = PageResponse.of(
-                applicationService.getAll(PageRequest.of(page, size), status, search));
+                applicationService.getAll(PageRequest.of(safePage, safeSize), status, search));
         return ResponseEntity.ok(ApiResponse.success(pageResponse, "Fetched all applications"));
     }
 

@@ -1,24 +1,38 @@
 package com.autoconsultancy.dto.request;
 
+import jakarta.validation.constraints.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 public class EmiPaymentRequest {
 
-    private Long financeDetailId;           // required
+    @NotNull(message = "Finance detail ID is required")
+    private Long financeDetailId;
 
-    private Integer installmentNumber;       // which EMI installment (1-based)
+    @NotNull(message = "Installment number is required")
+    @Min(value = 1, message = "Installment number must be at least 1")
+    @Max(value = 360, message = "Installment number must not exceed 360")
+    private Integer installmentNumber;
 
-    private LocalDate paymentDate;           // date the customer paid
+    @NotNull(message = "Payment date is required")
+    private LocalDate paymentDate;
 
-    private BigDecimal amountPaid;           // actual amount paid
+    @NotNull(message = "Amount paid is required")
+    @DecimalMin(value = "1.00", message = "Amount paid must be at least ₹1")
+    @DecimalMax(value = "10000000.00", message = "Amount paid exceeds maximum allowed")
+    @Digits(integer = 10, fraction = 2, message = "Invalid amount format")
+    private BigDecimal amountPaid;
 
-    // CASH / UPI / BANK_TRANSFER / CARD / OTHER
+    @Size(max = 50, message = "Payment mode must not exceed 50 characters")
     private String paymentMode;
 
-    private String referenceNumber;          // optional transaction ref
+    @Size(max = 200, message = "Reference number must not exceed 200 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9\\-_/]*$", message = "Reference number contains invalid characters")
+    private String referenceNumber;
 
-    private String notes;                    // optional admin notes
+    @Size(max = 500, message = "Notes must not exceed 500 characters")
+    private String notes;
 }

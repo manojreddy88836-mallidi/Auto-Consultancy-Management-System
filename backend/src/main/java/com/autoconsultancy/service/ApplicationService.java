@@ -592,7 +592,10 @@ public class ApplicationService {
         }
 
         if (search != null && !search.isBlank()) {
-            String term = search.toLowerCase();
+            // Sanitize search input: truncate and strip control characters
+            String safeSearch = search.length() > 200 ? search.substring(0, 200) : search;
+            String term = safeSearch.replaceAll("[\\x00-\\x1F\\x7F]", "").toLowerCase();
+
             list = list.stream().filter(a -> {
                 boolean matchAppNo = a.getApplicationNumber() != null && a.getApplicationNumber().toLowerCase().contains(term);
                 boolean matchCust = a.getCustomer() != null && a.getCustomer().getUser() != null &&
