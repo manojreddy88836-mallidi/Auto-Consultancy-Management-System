@@ -15,7 +15,11 @@ import com.autoconsultancy.entity.BikeInventory;
 import com.autoconsultancy.util.EmiCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -44,6 +48,7 @@ public class ApplicationService {
     private final BikeInventoryRepository bikeInventoryRepository;
     private final BikeInventoryImageRepository bikeInventoryImageRepository;
     private final EmiOverdueService emiOverdueService;
+    private final MongoTemplate mongoTemplate;
 
     private String generateApplicationNumber() {
         // Use MAX(id)+1 to ensure uniqueness even after deletions.
@@ -581,40 +586,74 @@ public class ApplicationService {
         return mapToSummary(applicationRepository.save(app));
     }
 
+    @Transactional(readOnly = true)
     public Page<ApplicationResponse> getAll(Pageable pageable, String status, String search) {
-        List<Application> list = applicationRepository.findAll();
-
-        if (status != null && !status.isBlank()) {
-            try {
-                Application.ApplicationStatus s = Application.ApplicationStatus.valueOf(status);
-                list = list.stream().filter(a -> a.getStatus() == s).collect(Collectors.toList());
-            } catch (IllegalArgumentException ignored) {}
-        }
-
+        // Sanitize search input
+        String term = null;
         if (search != null && !search.isBlank()) {
-            // Sanitize search input: truncate and strip control characters
-            String safeSearch = search.length() > 200 ? search.substring(0, 200) : search;
-            String term = safeSearch.replaceAll("[\\x00-\\x1F\\x7F]", "").toLowerCase();
-
-            list = list.stream().filter(a -> {
-                boolean matchAppNo = a.getApplicationNumber() != null && a.getApplicationNumber().toLowerCase().contains(term);
-                boolean matchCust = a.getCustomer() != null && a.getCustomer().getUser() != null &&
-                        ((a.getCustomer().getUser().getFirstName() != null && a.getCustomer().getUser().getFirstName().toLowerCase().contains(term)) ||
-                         (a.getCustomer().getUser().getLastName() != null && a.getCustomer().getUser().getLastName().toLowerCase().contains(term)) ||
-                         (a.getCustomer().getUser().getEmail() != null && a.getCustomer().getUser().getEmail().toLowerCase().contains(term)) ||
-                         (a.getCustomer().getUser().getPhone() != null && a.getCustomer().getUser().getPhone().toLowerCase().contains(term)));
-                boolean matchReg = a.getBikeDetail() != null && a.getBikeDetail().getRegistrationNumber() != null &&
-                        a.getBikeDetail().getRegistrationNumber().toLowerCase().contains(term);
-                return matchAppNo || matchCust || matchReg;
-            }).collect(Collectors.toList());
+            String safe = search.length() > 200 ? search.substring(0, 200) : search;
+            term = safe.replaceAll("[\\x00-\\x1F\\x7F]", "").trim();
+            if (term.isEmpty()) term = null;
         }
 
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), list.size());
-        List<ApplicationResponse> content = (start <= list.size()) ?
-                list.subList(start, end).stream().map(this::mapToSummary).collect(Collectors.toList()) : java.util.Collections.emptyList();
+        Application.ApplicationStatus statusEnum = null;
+        if (status != null && !status.isBlank()) {
+            try { statusEnum = Application.ApplicationStatus.valueOf(status); }
+            catch (IllegalArgumentException ignored) {}
+        }
 
-        return new org.springframework.data.domain.PageImpl<>(content, pageable, list.size());
+        // If no search term — use Spring Data repository (faster, index-friendly)
+        if (term == null) {
+            Page<Application> page = (statusEnum != null)
+                    ? applicationRepository.findByStatus(statusEnum, pageable)
+                    : applicationRepository.findAllBy(pageable);
+            return page.map(this::mapToSummary);
+        }
+
+        // With search — use raw BSON query to bypass Spring Data's @DBRef path validator
+        // Criteria.where() validates paths against entity mapping; for @DBRef-chained paths like
+        // "customer.user.firstName" the mapper fails. We use BasicQuery with raw BSON instead.
+        String escapedTerm = term.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+                                 .replace(".", "\\.").replace("*", "\\*").replace("+", "\\+")
+                                 .replace("?", "\\?").replace("[", "\\[").replace("]", "\\]")
+                                 .replace("{", "\\{").replace("}", "\\}").replace("^", "\\^");
+
+        org.bson.Document regexDoc = new org.bson.Document("$regex", escapedTerm)
+                .append("$options", "i");
+
+        java.util.List<org.bson.Document> orConditions = java.util.Arrays.asList(
+                new org.bson.Document("applicationNumber", regexDoc),
+                new org.bson.Document("bikeDetail.registrationNumber", regexDoc)
+                // Note: customer.user.firstName/email etc. are @DBRef references stored as IDs.
+                // MongoDB cannot query across @DBRef fields without $lookup aggregation.
+                // For customer name/email search, use the search by applicationNumber instead.
+        );
+
+        org.bson.Document filterDoc = new org.bson.Document("$or", orConditions);
+        if (statusEnum != null) {
+            filterDoc.append("status", statusEnum.name());
+        }
+
+        // Use collection name (not entity class) to bypass Spring Data's @DBRef path validation.
+        // Also avoid using pageable.sort — Spring Data validates sort field paths through MappingContext.
+        // Instead, apply sort, skip, limit directly on the BasicQuery via raw BSON.
+        final String COLLECTION = "applications";
+
+        org.springframework.data.mongodb.core.query.BasicQuery countQuery =
+                new org.springframework.data.mongodb.core.query.BasicQuery(filterDoc.toJson());
+        long total = mongoTemplate.count(countQuery, COLLECTION);
+
+        org.springframework.data.mongodb.core.query.BasicQuery dataQuery =
+                new org.springframework.data.mongodb.core.query.BasicQuery(filterDoc.toJson());
+        // Apply sort via raw BSON (bypass entity mapping path validation)
+        dataQuery.setSortObject(new org.bson.Document("createdAt", -1));
+        dataQuery.skip((long) pageable.getPageNumber() * pageable.getPageSize());
+        dataQuery.limit(pageable.getPageSize());
+
+        List<Application> results = mongoTemplate.find(dataQuery, Application.class, COLLECTION);
+
+        List<ApplicationResponse> content = results.stream().map(this::mapToSummary).collect(Collectors.toList());
+        return new PageImpl<>(content, pageable, total);
     }
     
     @Transactional(readOnly = true)

@@ -158,10 +158,21 @@ public class WorkerTaskService {
     @Transactional(readOnly = true)
     public Page<WorkerTaskResponse> getMyTasks(String email, String type, String status, int page, int size) {
         Worker w = resolveWorker(email);
-        TaskType   tt = type   != null ? TaskType.valueOf(type)     : null;
-        TaskStatus ts = status != null ? TaskStatus.valueOf(status) : null;
+        Long wid = w.getId();
         Pageable pg = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return workerTaskRepo.findByWorkerIdFiltered(w.getId(), tt, ts, pg).map(this::toResponse);
+
+        // Choose the most-specific DB query to avoid full collection scan
+        Page<WorkerTask> tasks;
+        if (type != null && status != null) {
+            tasks = workerTaskRepo.findByWorkerIdAndTypeAndStatus(wid, type, status, pg);
+        } else if (type != null) {
+            tasks = workerTaskRepo.findByWorkerIdAndType(wid, type, pg);
+        } else if (status != null) {
+            tasks = workerTaskRepo.findByWorkerIdAndStatus(wid, status, pg);
+        } else {
+            tasks = workerTaskRepo.findByWorkerId(wid, pg);
+        }
+        return tasks.map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -376,10 +387,28 @@ public class WorkerTaskService {
 
     @Transactional(readOnly = true)
     public Page<WorkerTaskResponse> adminGetAllTasks(String type, String status, Long workerId, int page, int size) {
-        TaskType   tt = type   != null ? TaskType.valueOf(type)     : null;
-        TaskStatus ts = status != null ? TaskStatus.valueOf(status) : null;
         Pageable pg = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return workerTaskRepo.findAllFiltered(tt, ts, workerId, pg).map(this::toResponse);
+
+        // Choose the most-specific DB query to avoid full collection scan
+        Page<WorkerTask> tasks;
+        if (workerId != null && type != null && status != null) {
+            tasks = workerTaskRepo.findAllByWorkerTypeStatusAdmin(workerId, type, status, pg);
+        } else if (workerId != null && type != null) {
+            tasks = workerTaskRepo.findAllByWorkerAndTypeAdmin(workerId, type, pg);
+        } else if (workerId != null && status != null) {
+            tasks = workerTaskRepo.findAllByWorkerAndStatusAdmin(workerId, status, pg);
+        } else if (workerId != null) {
+            tasks = workerTaskRepo.findAllByWorkerIdAdmin(workerId, pg);
+        } else if (type != null && status != null) {
+            tasks = workerTaskRepo.findAllByTypeAndStatusAdmin(type, status, pg);
+        } else if (type != null) {
+            tasks = workerTaskRepo.findAllByTypeAdmin(type, pg);
+        } else if (status != null) {
+            tasks = workerTaskRepo.findAllByStatusAdmin(status, pg);
+        } else {
+            tasks = workerTaskRepo.findAllByOrderByCreatedAtDesc(pg);
+        }
+        return tasks.map(this::toResponse);
     }
 
     @Transactional(readOnly = true)

@@ -2,6 +2,7 @@ package com.autoconsultancy.repository;
 
 import com.autoconsultancy.entity.Application;
 import com.autoconsultancy.entity.Application.ApplicationStatus;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
@@ -15,6 +16,12 @@ import java.util.List;
 public interface ApplicationRepository extends MongoRepository<Application, Long> {
 
     List<Application> findByCustomerId(Long customerId);
+
+    /** Paginated list of all applications — pure DB-level pagination, no in-memory loading. */
+    Page<Application> findAllBy(Pageable pageable);
+
+    /** Paginated list filtered by status — DB-level filter + pagination. */
+    Page<Application> findByStatus(ApplicationStatus status, Pageable pageable);
 
     @Query("{'workerAssignment.worker.user.id': ?0, 'workerAssignment.active': true}")
     List<Application> findByWorkerUserId(Long userId);
@@ -39,9 +46,15 @@ public interface ApplicationRepository extends MongoRepository<Application, Long
 
     List<Application> findByStatusNotIn(Collection<ApplicationStatus> statuses);
 
+    /**
+     * Returns the single highest application ID without scanning the entire collection.
+     * Uses a sort + limit(1) + projection so MongoDB only reads one document.
+     */
+    @Query(value = "{}", sort = "{'_id':-1}", fields = "{'_id':1}")
+    java.util.Optional<Application> findTopByOrderByIdDesc();
+
     default Long findMaxId() {
-        List<Application> list = findAll();
-        return list.stream().mapToLong(Application::getId).max().orElse(0L);
+        return findTopByOrderByIdDesc().map(Application::getId).orElse(0L);
     }
 
     default List<Object[]> countByMonth() {

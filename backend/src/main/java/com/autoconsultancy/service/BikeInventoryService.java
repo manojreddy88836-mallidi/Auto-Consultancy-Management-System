@@ -18,7 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +45,7 @@ public class BikeInventoryService {
     private final BikeInventoryRepository inventoryRepository;
     private final BikeInventoryImageRepository imageRepository;
     private final BikeModelRepository bikeModelRepository;
+    private final MongoTemplate mongoTemplate;
 
     @Value("${file.upload-dir}")
     private String uploadDir;
@@ -113,11 +118,67 @@ public class BikeInventoryService {
         return mapToResponse(inv, true);
     }
 
-    /** Admin: paginated list with filters */
+    /** Admin: paginated list with filters — all filtering happens at DB level. */
     @Transactional(readOnly = true)
     public Page<BikeInventoryResponse> getAll(Long modelId, Long manufacturerId, String saleStatus, String search, Pageable pageable) {
-        return inventoryRepository.findAllAdmin(modelId, manufacturerId, saleStatus, search, pageable)
-                .map(inv -> mapToResponse(inv, false));
+        // If no search term — use indexed Spring Data queries
+        if (search == null || search.isBlank()) {
+            Page<BikeInventory> page;
+            if (modelId != null && manufacturerId != null && saleStatus != null && !saleStatus.isBlank()) {
+                page = inventoryRepository.findByActiveTrueAndModelIdAndManufacturerIdAndSaleStatus(modelId, manufacturerId, saleStatus, pageable);
+            } else if (modelId != null && manufacturerId != null) {
+                page = inventoryRepository.findByActiveTrueAndModelIdAndManufacturerId(modelId, manufacturerId, pageable);
+            } else if (modelId != null && saleStatus != null && !saleStatus.isBlank()) {
+                page = inventoryRepository.findByActiveTrueAndModelIdAndSaleStatus(modelId, saleStatus, pageable);
+            } else if (manufacturerId != null && saleStatus != null && !saleStatus.isBlank()) {
+                page = inventoryRepository.findByActiveTrueAndManufacturerIdAndSaleStatus(manufacturerId, saleStatus, pageable);
+            } else if (modelId != null) {
+                page = inventoryRepository.findByActiveTrueAndModelId(modelId, pageable);
+            } else if (manufacturerId != null) {
+                page = inventoryRepository.findByActiveTrueAndManufacturerId(manufacturerId, pageable);
+            } else if (saleStatus != null && !saleStatus.isBlank()) {
+                page = inventoryRepository.findByActiveTrueAndSaleStatus(saleStatus, pageable);
+            } else {
+                page = inventoryRepository.findByActiveTrue(pageable);
+            }
+            return page.map(inv -> mapToResponse(inv, false));
+        }
+
+        // With search — use MongoTemplate regex (DB-level, no full load into memory)
+        String escapedTerm = search.length() > 200 ? search.substring(0, 200) : search;
+        escapedTerm = escapedTerm.replaceAll("[\\x00-\\x1F\\x7F]", "").trim();
+        if (escapedTerm.isEmpty()) {
+            return inventoryRepository.findByActiveTrue(pageable).map(inv -> mapToResponse(inv, false));
+        }
+        // Use raw BSON to bypass Spring Data @DBRef path validator
+        // bikeModel is @DBRef so "bikeModel.modelName" would fail Criteria path mapping
+        String safeEscaped = escapedTerm.replace("\\", "\\\\").replace(".", "\\.")
+                                        .replace("*", "\\*").replace("+", "\\+")
+                                        .replace("?", "\\?").replace("[", "\\[")
+                                        .replace("]", "\\]").replace("{", "\\{")
+                                        .replace("}", "\\}").replace("^", "\\^");
+
+        org.bson.Document regexDoc = new org.bson.Document("$regex", safeEscaped)
+                .append("$options", "i");
+
+        java.util.List<org.bson.Document> orConditions = java.util.Arrays.asList(
+                new org.bson.Document("bikeModel.modelName", regexDoc),
+                new org.bson.Document("bikeCode", regexDoc),
+                new org.bson.Document("registrationNumber", regexDoc)
+        );
+
+        org.bson.Document filterDoc = new org.bson.Document("active", true)
+                .append("$or", orConditions);
+        if (modelId != null) filterDoc.append("bikeModel.id", modelId);
+        if (manufacturerId != null) filterDoc.append("bikeModel.manufacturer.id", manufacturerId);
+        if (saleStatus != null && !saleStatus.isBlank()) filterDoc.append("saleStatus", saleStatus);
+
+        org.springframework.data.mongodb.core.query.BasicQuery bq =
+                new org.springframework.data.mongodb.core.query.BasicQuery(filterDoc.toJson());
+        long total = mongoTemplate.count(bq, BikeInventory.class);
+        bq.with(pageable);
+        List<BikeInventory> results = mongoTemplate.find(bq, BikeInventory.class);
+        return new PageImpl<>(results.stream().map(inv -> mapToResponse(inv, false)).collect(Collectors.toList()), pageable, total);
     }
 
     /** Customer: only AVAILABLE bikes with at least one image */

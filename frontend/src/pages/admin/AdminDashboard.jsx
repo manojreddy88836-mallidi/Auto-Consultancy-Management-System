@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend
@@ -8,32 +8,10 @@ import { toast } from 'react-hot-toast';
 import useAuth from '../../hooks/useAuth';
 import * as adminApi from '../../api/adminApi';
 import { getAllApplicationsAdmin } from '../../api/applicationApi';
+import * as reportApi from '../../api/reportApi';
 import { useNavigate } from 'react-router-dom';
 
 const COLORS = ['#1E88E5','#F59E0B','#10B981','#EF4444','#8B5CF6','#06B6D4','#EC4899'];
-
-// Build live chart data from real applications list
-const buildMonthlyData = (apps) => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const counts = Array(12).fill(0);
-  apps.forEach(a => { if (a.createdAt) counts[new Date(a.createdAt).getMonth()]++; });
-  return months.map((month, i) => ({ month, count: counts[i] }));
-};
-
-const buildStatusData = (apps) => {
-  const map = {};
-  apps.forEach(a => {
-    const label = a.status?.replace(/_/g,' ') || 'Unknown';
-    map[label] = (map[label] || 0) + 1;
-  });
-  return Object.entries(map).map(([name, value]) => ({ name, value }));
-};
-
-const buildMfrData = (apps) => {
-  const map = {};
-  apps.forEach(a => { if (a.manufacturerName) map[a.manufacturerName] = (map[a.manufacturerName] || 0) + 1; });
-  return Object.entries(map).sort((a,b) => b[1]-a[1]).slice(0,8).map(([name,count]) => ({ name, count }));
-};
 
 const StatCard = ({ title, value, icon, trend, trendUp, color }) => {
   const colors = {
@@ -63,32 +41,55 @@ const StatCard = ({ title, value, icon, trend, trendUp, color }) => {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [stats, setStats]       = useState(null);
-  const [loading, setLoading]   = useState(true);
+  const [stats, setStats]           = useState(null);
+  const [loading, setLoading]       = useState(true);
   const [recentApps, setRecentApps] = useState([]);
-  const [allApps, setAllApps]   = useState([]);
+  // Chart data from report APIs (pre-aggregated, no full app fetch)
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [statusData,  setStatusData]  = useState([]);
+  const [mfrData,     setMfrData]     = useState([]);
 
-  useEffect(() => {
-    Promise.allSettled([
-      adminApi.getDashboardStats(),
-      getAllApplicationsAdmin({ page: 0, size: 200, sort: 'createdAt,desc' }),
-    ]).then(([statsRes, appsRes]) => {
+  const fetchDashboard = useCallback(async (signal) => {
+    setLoading(true);
+    try {
+      const [statsRes, recentRes, monthlyRes, statusRes, mfrRes] = await Promise.allSettled([
+        adminApi.getDashboardStats(),
+        getAllApplicationsAdmin({ page: 0, size: 5, sort: 'createdAt,desc' }),
+        reportApi.getApplicationsByMonth(),
+        reportApi.getApplicationsByStatus(),
+        reportApi.getBrandStats(),
+      ]);
+
       if (statsRes.status === 'fulfilled') {
         setStats(statsRes.value?.data?.data || statsRes.value?.data);
       }
-      if (appsRes.status === 'fulfilled') {
-        const d = appsRes.value?.data?.data;
-        const list = Array.isArray(d) ? d : d?.content || [];
-        setAllApps(list);
-        setRecentApps(list.slice(0, 5));
+      if (recentRes.status === 'fulfilled') {
+        const d = recentRes.value?.data?.data;
+        setRecentApps(Array.isArray(d) ? d : d?.content || []);
       }
-    }).catch(() => toast.error('Failed to load dashboard data'))
-      .finally(() => setLoading(false));
+      if (monthlyRes.status === 'fulfilled') {
+        setMonthlyData(monthlyRes.value?.data?.data || []);
+      }
+      if (statusRes.status === 'fulfilled') {
+        setStatusData(statusRes.value?.data?.data || []);
+      }
+      if (mfrRes.status === 'fulfilled') {
+        setMfrData(mfrRes.value?.data?.data || []);
+      }
+    } catch (e) {
+      if (e?.name !== 'CanceledError' && e?.name !== 'AbortError') {
+        toast.error('Failed to load dashboard data');
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const monthlyData = buildMonthlyData(allApps);
-  const statusData  = buildStatusData(allApps);
-  const mfrData     = buildMfrData(allApps);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchDashboard(controller.signal);
+    return () => controller.abort();
+  }, [fetchDashboard]);
 
   const statusConfig = {
     DRAFT: 'bg-gray-100 text-gray-600', SUBMITTED: 'bg-blue-100 text-blue-700',

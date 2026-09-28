@@ -36,7 +36,8 @@ const ApplicationsPage = () => {
   const navigate = useNavigate();
   const [applications, setApplications]   = useState([]);
   const [loading, setLoading]             = useState(true);
-  const [search, setSearch]               = useState('');
+  const [searchInput, setSearchInput]     = useState('');   // immediate UI value
+  const [search, setSearch]               = useState('');   // debounced — triggers API
   const [statusFilter, setStatusFilter]   = useState('');
   const [page, setPage]                   = useState(0);
   const [totalPages, setTotalPages]       = useState(1);
@@ -50,6 +51,15 @@ const ApplicationsPage = () => {
   const [deleteModalApp, setDeleteModalApp]   = useState(null);
   const [actionLoading, setActionLoading]     = useState(false);
   const PAGE_SIZE = 10;
+
+  // Debounce: update search 400ms after user stops typing, reset to page 0
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   const fetchApplications = useCallback(async () => {
     setLoading(true);
@@ -161,7 +171,7 @@ const ApplicationsPage = () => {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"/>
-          <input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
+          <input value={searchInput} onChange={e => setSearchInput(e.target.value)}
             placeholder="Search by customer, app#..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"/>
         </div>

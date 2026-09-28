@@ -12,6 +12,7 @@ import com.autoconsultancy.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,9 +28,23 @@ public class AdminService {
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MongoTemplate mongoTemplate;
 
     @Transactional(readOnly = true)
     public DashboardStatsResponse getDashboardStats() {
+        // Count queries use indexed fields — fast even at scale
+        long newThisMonth = 0L;
+        try {
+            // Count applications created in the current calendar month
+            java.time.LocalDateTime startOfMonth = java.time.LocalDate.now()
+                    .withDayOfMonth(1).atStartOfDay();
+            org.springframework.data.mongodb.core.query.Query q =
+                    new org.springframework.data.mongodb.core.query.Query(
+                            org.springframework.data.mongodb.core.query.Criteria
+                                    .where("createdAt").gte(startOfMonth));
+            newThisMonth = mongoTemplate.count(q, com.autoconsultancy.entity.Application.class);
+        } catch (Exception ignored) {}
+
         return DashboardStatsResponse.builder()
                 .totalCustomers(customerRepository.count())
                 .totalWorkers(workerRepository.count())
@@ -41,12 +56,7 @@ public class AdminService {
                 .completedApplications(applicationRepository.countByStatus(ApplicationStatus.COMPLETED))
                 .financeVerificationPending(applicationRepository.countByStatus(ApplicationStatus.FINANCE_VERIFICATION))
                 .documentsUnderReview(documentRepository.countByStatus("UNDER_REVIEW"))
-                .newApplicationsThisMonth(applicationRepository.countByMonth().stream()
-                        .filter(r -> {
-                            int m = ((Number) r[0]).intValue();
-                            return m == java.time.LocalDate.now().getMonthValue();
-                        })
-                        .mapToLong(r -> ((Number) r[1]).longValue()).sum())
+                .newApplicationsThisMonth(newThisMonth)
                 .newCustomersThisMonth(customerRepository.countNewThisMonth())
                 .build();
     }

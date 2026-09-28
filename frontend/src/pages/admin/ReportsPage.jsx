@@ -1,57 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend, RadialBarChart, RadialBar
 } from 'recharts';
 import { BarChart2, Download, RefreshCw, TrendingUp, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { getAllApplicationsAdmin } from '../../api/applicationApi';
+import * as reportApi from '../../api/reportApi';
 
 const COLORS = ['#1E88E5','#F59E0B','#10B981','#EF4444','#8B5CF6','#06B6D4','#EC4899','#F97316'];
-
-// Build monthly data from real apps array
-const buildMonthlyData = (apps) => {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const counts = Array(12).fill(0);
-  apps.forEach(a => {
-    if (a.createdAt) {
-      const m = new Date(a.createdAt).getMonth();
-      counts[m]++;
-    }
-  });
-  return months.map((month, i) => ({ month, count: counts[i] }));
-};
-
-const buildStatusData = (apps) => {
-  const map = {};
-  apps.forEach(a => {
-    const label = a.status?.replace(/_/g,' ') || 'Unknown';
-    map[label] = (map[label] || 0) + 1;
-  });
-  return Object.entries(map).map(([name, value]) => ({ name, value }));
-};
-
-const buildMfrData = (apps) => {
-  const map = {};
-  apps.forEach(a => {
-    if (a.manufacturerName) map[a.manufacturerName] = (map[a.manufacturerName] || 0) + 1;
-  });
-  return Object.entries(map)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0,8)
-    .map(([name,count]) => ({ name, count }));
-};
-
-const buildFinanceData = (apps) => {
-  const financed = apps.filter(a => a.underFinance === true).length;
-  const paid     = apps.filter(a => a.underFinance === false).length;
-  const pending  = apps.filter(a => a.underFinance === null || a.underFinance === undefined).length;
-  return [
-    { name:'Under Finance', value: financed },
-    { name:'No Finance (Paid)', value: paid },
-    { name:'Pending', value: pending },
-  ].filter(d => d.value > 0);
-};
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -66,40 +22,68 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const ReportsPage = () => {
-  const [apps, setApps]     = useState([]);
   const [loading, setLoading] = useState(true);
+  const [monthly,  setMonthly]  = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [mfrs,     setMfrs]     = useState([]);
+  const [finance,  setFinance]  = useState([]);
+  // Derived stats from status data
+  const [reportStats, setReportStats] = useState({ total: 0, approved: 0, rejected: 0, pending: 0 });
 
-  const fetchApps = async () => {
+  const fetchReports = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getAllApplicationsAdmin({ page: 0, size: 200, sort: 'createdAt,desc' });
-      const d = res.data?.data;
-      setApps(Array.isArray(d) ? d : d?.content || []);
+      const [monthlyRes, statusRes, mfrRes, financeRes] = await Promise.allSettled([
+        reportApi.getApplicationsByMonth(),
+        reportApi.getApplicationsByStatus(),
+        reportApi.getBrandStats(),
+        reportApi.getFinanceStats(),
+      ]);
+
+      if (monthlyRes.status === 'fulfilled') {
+        setMonthly(monthlyRes.value?.data?.data || []);
+      }
+      if (statusRes.status === 'fulfilled') {
+        const statusData = statusRes.value?.data?.data || [];
+        setStatuses(statusData);
+        // Derive summary stats from status counts
+        let total = 0, approved = 0, rejected = 0, pending = 0;
+        statusData.forEach(s => {
+          total += s.value || 0;
+          if (s.name === 'Approved' || s.name === 'Completed') approved += s.value || 0;
+          else if (s.name === 'Rejected') rejected += s.value || 0;
+          else if (s.name !== 'Draft') pending += s.value || 0;
+        });
+        setReportStats({ total, approved, rejected, pending });
+      }
+      if (mfrRes.status === 'fulfilled') {
+        // getBrandStats returns [{name, count}] — recharts expects same shape
+        setMfrs(mfrRes.value?.data?.data || []);
+      }
+      if (financeRes.status === 'fulfilled') {
+        const fd = financeRes.value?.data?.data || {};
+        setFinance([
+          { name: 'Under Finance',     value: fd.underFinance    || 0 },
+          { name: 'No Finance (Paid)', value: fd.notUnderFinance || 0 },
+        ].filter(d => d.value > 0));
+      }
     } catch {
       toast.error('Failed to load report data');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchApps(); }, []);
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
-  const monthly   = buildMonthlyData(apps);
-  const statuses  = buildStatusData(apps);
-  const mfrs      = buildMfrData(apps);
-  const finance   = buildFinanceData(apps);
-
-  const total      = apps.length;
-  const approved   = apps.filter(a => a.status === 'APPROVED' || a.status === 'COMPLETED').length;
-  const rejected   = apps.filter(a => a.status === 'REJECTED').length;
-  const pending    = apps.filter(a => !['APPROVED','REJECTED','COMPLETED','DRAFT'].includes(a.status)).length;
+  const { total, approved, rejected, pending } = reportStats;
 
   const handleExport = () => {
-    // Build CSV from apps data
-    const headers = 'App#,Customer,Brand,Model,Year,Finance,Status,Submitted\n';
-    const rows = apps.map(a =>
-      `${a.applicationNumber},"${a.customerName}",${a.manufacturerName||''},${a.modelName||''},${a.manufacturingYear||''},${a.underFinance===true?'Financed':a.underFinance===false?'Paid':'—'},${a.status},${a.submittedAt?new Date(a.submittedAt).toLocaleDateString('en-IN'):''}`
-    ).join('\n');
+    // Build minimal CSV from status data (full export would need a backend endpoint)
+    const headers = 'Category,Count\n';
+    const rows = statuses.map(s => `${s.name},${s.value}`).join('\n');
     const blob = new Blob([headers + rows], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -127,7 +111,7 @@ const ReportsPage = () => {
           <p className="text-gray-500 text-sm mt-1">Live data — {total} total applications</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={fetchApps} className="p-2 hover:bg-gray-100 rounded-lg" title="Refresh data">
+          <button onClick={fetchReports} className="p-2 hover:bg-gray-100 rounded-lg" title="Refresh data">
             <RefreshCw size={18} className="text-gray-500"/>
           </button>
           <button onClick={handleExport}
@@ -267,8 +251,8 @@ const ReportsPage = () => {
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-emerald-400">
-                {apps.filter(a=>a.underFinance===true).length > 0
-                  ? `${((apps.filter(a=>a.underFinance===true).length/total)*100).toFixed(1)}%`
+                {finance.find(f => f.name === 'Under Finance')?.value > 0
+                  ? `${((finance.find(f => f.name === 'Under Finance').value / total) * 100).toFixed(1)}%`
                   : '—'}
               </p>
               <p className="text-xs text-white/70 mt-1 font-medium">Finance Rate</p>
