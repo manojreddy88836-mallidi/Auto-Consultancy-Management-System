@@ -622,11 +622,10 @@ public class ApplicationService {
                 .append("$options", "i");
 
         java.util.List<org.bson.Document> orConditions = java.util.Arrays.asList(
-                new org.bson.Document("applicationNumber", regexDoc),
-                new org.bson.Document("bikeDetail.registrationNumber", regexDoc)
-                // Note: customer.user.firstName/email etc. are @DBRef references stored as IDs.
-                // MongoDB cannot query across @DBRef fields without $lookup aggregation.
-                // For customer name/email search, use the search by applicationNumber instead.
+                new org.bson.Document("applicationNumber", regexDoc)
+                // All other searchable fields (customer, bikeDetail, financeDetail) are @DBRef
+                // references — their nested paths cannot be resolved by Spring Data's MappingContext.
+                // applicationNumber (e.g. AUTO-2024-00001) is the correct search key.
         );
 
         org.bson.Document filterDoc = new org.bson.Document("$or", orConditions);

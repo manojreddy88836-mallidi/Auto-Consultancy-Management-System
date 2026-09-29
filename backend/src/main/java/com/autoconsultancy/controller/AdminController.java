@@ -49,7 +49,7 @@ public class AdminController {
     }
 
     @PostMapping("/workers")
-    public ResponseEntity<ApiResponse<Worker>> createWorker(@RequestBody CreateWorkerRequest request) {
+    public ResponseEntity<ApiResponse<Worker>> createWorker(@RequestBody @jakarta.validation.Valid CreateWorkerRequest request) {
         return ResponseEntity.ok(ApiResponse.success(adminService.createWorker(request), "Worker created"));
     }
 
@@ -59,7 +59,7 @@ public class AdminController {
     }
 
     @PutMapping("/workers/{id}")
-    public ResponseEntity<ApiResponse<Worker>> updateWorker(@PathVariable Long id, @RequestBody CreateWorkerRequest request) {
+    public ResponseEntity<ApiResponse<Worker>> updateWorker(@PathVariable Long id, @RequestBody @jakarta.validation.Valid CreateWorkerRequest request) {
         return ResponseEntity.ok(ApiResponse.success(adminService.updateWorker(id, request), "Worker updated"));
     }
 

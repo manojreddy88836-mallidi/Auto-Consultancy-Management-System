@@ -32,7 +32,7 @@ public class WorkerService {
         User user = worker.getUser();
         user.setPhone(request.getPhone());
         userRepository.save(user);
-        return worker;
+        return workerRepository.save(worker); // L6 fix: persist worker document
     }
 
     @Transactional(readOnly = true)

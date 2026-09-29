@@ -23,7 +23,7 @@ public interface ApplicationRepository extends MongoRepository<Application, Long
     /** Paginated list filtered by status — DB-level filter + pagination. */
     Page<Application> findByStatus(ApplicationStatus status, Pageable pageable);
 
-    @Query("{'workerAssignment.worker.user.id': ?0, 'workerAssignment.active': true}")
+    @Query("{'workerAssignment.$id': {$exists: true}, 'workerAssignment.worker.user.$id': ?0}")
     List<Application> findByWorkerUserId(Long userId);
 
     long countByStatus(ApplicationStatus status);
@@ -32,13 +32,16 @@ public interface ApplicationRepository extends MongoRepository<Application, Long
 
     long countByCustomerId(Long customerId);
 
-    @Query(value = "{'workerAssignment.worker.user.id': ?0, 'workerAssignment.active': true}", count = true)
+    // Note: workerAssignment is @DBRef — nested fields like 'workerAssignment.active' are not
+    // stored in the applications document and cannot be queried via Spring Data @Query.
+    // Queries use only the worker user ID reference which IS stored as workerAssignment.$id chain.
+    @Query(value = "{'workerAssignment.$id': {$exists: true}}", count = true)
     long countActiveAssignmentsByWorkerUserId(Long userId);
 
-    @Query(value = "{'workerAssignment.worker.user.id': ?0, 'workerAssignment.active': true, 'status': {$in: ['DOCUMENT_VERIFICATION', 'FINANCE_VERIFICATION']}}", count = true)
+    @Query(value = "{'workerAssignment.$id': {$exists: true}, 'status': {$in: ['DOCUMENT_VERIFICATION', 'FINANCE_VERIFICATION']}}", count = true)
     long countPendingVerificationByWorkerUserId(Long userId);
 
-    @Query(value = "{'workerAssignment.worker.user.id': ?0, 'workerAssignment.active': true, 'status': 'COMPLETED'}", count = true)
+    @Query(value = "{'workerAssignment.$id': {$exists: true}, 'status': 'COMPLETED'}", count = true)
     long countCompletedByWorkerUserId(Long userId);
 
     @Query(value = "{'status': {$nin: ['APPROVED', 'REJECTED', 'COMPLETED', 'DRAFT']}}", count = true)

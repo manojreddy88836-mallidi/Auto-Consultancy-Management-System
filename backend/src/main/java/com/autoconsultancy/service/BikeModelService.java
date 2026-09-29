@@ -157,6 +157,16 @@ public class BikeModelService {
                 .collect(Collectors.toList());
     }
 
+    // ── Public: all active bike models ──────────────────────────────────
+    @Transactional(readOnly = true)
+    public List<BikeModelResponse> getAllActive() {
+        List<BikeModel> models = bikeModelRepository.findByActiveTrue();
+        Map<Long, Long> countMap = buildInventoryCountMap();
+        return models.stream()
+                .map(m -> mapToResponse(m, countMap.getOrDefault(m.getId(), 0L)))
+                .collect(Collectors.toList());
+    }
+
     // ── Public: AVAILABLE bikes for sale ───────────────────────────────
     @Transactional(readOnly = true)
     public List<BikeModelResponse> getAvailableForSale(String search, Long manufacturerId) {

@@ -4,6 +4,10 @@ import com.autoconsultancy.entity.Notification;
 import com.autoconsultancy.entity.User;
 import com.autoconsultancy.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -14,6 +18,7 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final MongoTemplate mongoTemplate;
 
     public void createNotification(User user, String title, String message, String type, Long applicationId) {
         Notification notification = Notification.builder()
@@ -41,8 +46,10 @@ public class NotificationService {
     }
 
     public void markAllAsRead(Long userId) {
-        List<Notification> notifs = notificationRepository.findByUserId(userId);
-        notifs.forEach(n -> n.setRead(true));
-        notificationRepository.saveAll(notifs);
+        // H6 fix: single bulk update instead of load-all + saveAll
+        // db.notifications.updateMany({userId: userId, read: false}, {$set: {read: true}})
+        Query query = new Query(Criteria.where("user.$id").is(userId).and("read").is(false));
+        Update update = new Update().set("read", true);
+        mongoTemplate.updateMulti(query, update, Notification.class);
     }
 }

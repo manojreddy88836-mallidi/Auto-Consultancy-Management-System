@@ -48,6 +48,12 @@ public class BikeModelController {
         return ResponseEntity.ok(ApiResponse.success(bikeModelService.getYears(modelId), "Fetched years"));
     }
 
+    /** Public: all active bike models (used by frontend dropdowns and listings) */
+    @GetMapping("/public/all")
+    public ResponseEntity<ApiResponse<List<BikeModelResponse>>> getAllPublic() {
+        return ResponseEntity.ok(ApiResponse.success(bikeModelService.getAllActive(), "Fetched all bike models"));
+    }
+
     /** Customer: bikes available for sale (AVAILABLE status only) */
     @GetMapping("/public/for-sale")
     public ResponseEntity<ApiResponse<List<BikeModelResponse>>> getForSale(
