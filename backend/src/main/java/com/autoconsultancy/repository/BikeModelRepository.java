@@ -11,6 +11,7 @@ import java.util.List;
 public interface BikeModelRepository extends MongoRepository<BikeModel, Long> {
     List<BikeModel> findByManufacturerIdAndActiveTrue(Long manufacturerId);
     List<BikeModel> findBySaleStatusAndActiveTrueAndAvailableForSaleTrue(BikeModel.SaleStatus saleStatus);
+    List<BikeModel> findByActiveTrue();
 
     default List<Object[]> countAvailableInventoryPerModel() {
         return new ArrayList<>();
