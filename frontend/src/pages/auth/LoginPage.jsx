@@ -6,7 +6,7 @@ import useAuth from '../../hooks/useAuth';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, adminInitiateLogin } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,6 @@ const LoginPage = () => {
   // NOTE: Do NOT hardcode passwords in frontend source code
   const fillDemo = (role) => {
     const emails = {
-      admin:    'admin@autoconsultancy.com',
       worker:   'worker1@autoconsultancy.com',
       customer: 'sectest@example.com',
     };
@@ -36,12 +35,34 @@ const LoginPage = () => {
     }
     setLoading(true);
     try {
-      const userData = await login(formData.email, formData.password);
-      toast.success(`Welcome back, ${userData.firstName}!`);
-      // Redirect based on actual role from server
-      if (userData.role === 'ADMIN') navigate('/admin');
-      else if (userData.role === 'WORKER') navigate('/worker');
-      else navigate('/customer');
+      // Detect if admin email is being used → route through OTP
+      // The backend will also enforce this — this is just a UX optimization
+      const isAdminEmail = formData.email.toLowerCase() === 'venkatamanojreddymallidi@gmail.com';
+
+      if (isAdminEmail) {
+        // Admin two-step: Step 1 — validate credentials, get OTP challenge
+        const challenge = await adminInitiateLogin(formData.email, formData.password);
+        toast.success('Credentials verified! Check your Gmail for the OTP.');
+        // Navigate to OTP page, passing the challenge data as state
+        navigate('/admin-otp', {
+          state: {
+            otpToken: challenge.otpToken,
+            sentTo:   challenge.sentTo,
+            expiresIn: challenge.expiresIn,
+            adminEmail: formData.email,
+          },
+        });
+      } else {
+        // Worker / Customer standard login
+        const userData = await login(formData.email, formData.password);
+        toast.success(`Welcome back, ${userData.firstName}!`);
+        if (userData.role === 'WORKER')   navigate('/worker');
+        else if (userData.role === 'CUSTOMER') navigate('/customer');
+        else {
+          // Admin accidentally trying standard login — backend will reject, but show UX hint
+          setError('Admin accounts require OTP authentication. Please use your registered admin email.');
+        }
+      }
     } catch (err) {
       const msg = err?.response?.data?.message || 'Invalid email or password';
       setError(msg);
@@ -124,13 +145,13 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Demo credentials */}
+          {/* Demo credentials — Worker and Customer only */}
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
             <p className="text-xs font-bold text-blue-800 mb-2 flex items-center gap-1">
               <ShieldCheck size={14} /> Demo Credentials (click to fill)
             </p>
             <div className="flex flex-wrap gap-2">
-              {['admin', 'worker', 'customer'].map((role) => (
+              {['worker', 'customer'].map((role) => (
                 <button
                   key={role}
                   type="button"
@@ -141,6 +162,9 @@ const LoginPage = () => {
                 </button>
               ))}
             </div>
+            <p className="text-xs text-blue-600 mt-2 flex items-center gap-1">
+              🔐 Admin login requires Gmail OTP verification
+            </p>
           </div>
 
           {error && (
@@ -162,7 +186,6 @@ const LoginPage = () => {
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-sm font-semibold text-gray-700">Password</label>
-                <a href="#" className="text-xs text-[#1E88E5] hover:underline">Forgot password?</a>
               </div>
               <div className="relative">
                 <input

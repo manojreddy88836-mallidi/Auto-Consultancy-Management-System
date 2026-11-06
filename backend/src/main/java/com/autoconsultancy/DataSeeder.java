@@ -33,17 +33,30 @@ public class DataSeeder {
     private final PasswordEncoder passwordEncoder;
     private final SequenceGeneratorService sequenceGenerator;
 
-    @org.springframework.beans.factory.annotation.Value("${SEED_ADMIN_EMAIL:admin@autoconsultancy.com}")
+    @org.springframework.beans.factory.annotation.Value("${admin.email:venkatamanojreddymallidi@gmail.com}")
     private String adminEmail;
 
     @org.springframework.beans.factory.annotation.Value("${SEED_ADMIN_PASSWORD:Admin@123}")
     private String adminPassword;
-
     @org.springframework.beans.factory.annotation.Value("${SEED_WORKER_PASSWORD:Worker@123}")
     private String workerPassword;
 
     @EventListener(ApplicationReadyEvent.class)
     public void seedData() {
+        // ── Admin email migration ─────────────────────────────────────────────
+        // If the old admin email exists and the new one doesn't, migrate it.
+        final String OLD_ADMIN_EMAIL = "admin@autoconsultancy.com";
+        if (!adminEmail.equalsIgnoreCase(OLD_ADMIN_EMAIL)) {
+            userRepository.findByEmail(OLD_ADMIN_EMAIL).ifPresent(oldAdmin -> {
+                if (!userRepository.findByEmail(adminEmail).isPresent()) {
+                    oldAdmin.setEmail(adminEmail);
+                    userRepository.save(oldAdmin);
+                    System.out.println("[DataSeeder] Admin email migrated: " + OLD_ADMIN_EMAIL + " → " + adminEmail);
+                }
+            });
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         if (!userRepository.findByEmail(adminEmail).isPresent()) {
             long adminId = sequenceGenerator.generateSequence("users");
             User admin = User.builder()
@@ -145,8 +158,10 @@ public class DataSeeder {
     }
 
     private void ensureDefaultUsersActive() {
+        // Keep workers active; admin email is managed via admin.email property
         List<String> defaultEmails = List.of(
                 "admin@autoconsultancy.com",
+                "venkatamanojreddymallidi@gmail.com",
                 "worker1@autoconsultancy.com",
                 "worker2@autoconsultancy.com",
                 "worker3@autoconsultancy.com"

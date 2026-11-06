@@ -15,6 +15,7 @@ const ContactPage       = lazy(() => import('./pages/public/ContactPage'));
 const EmiCalculatorPage = lazy(() => import('./pages/public/EmiCalculatorPage'));
 const LoginPage         = lazy(() => import('./pages/auth/LoginPage'));
 const RegisterPage      = lazy(() => import('./pages/auth/RegisterPage'));
+const AdminOtpPage      = lazy(() => import('./pages/auth/AdminOtpPage'));
 const NotFoundPage      = lazy(() => import('./pages/public/NotFoundPage'));
 
 // Admin pages (lazy)
@@ -75,6 +76,7 @@ const App = () => (
       <Route path="/contact"        element={<ContactPage />} />
       <Route path="/login"          element={<LoginPage />} />
       <Route path="/register"       element={<RegisterPage />} />
+      <Route path="/admin-otp"      element={<AdminOtpPage />} />
       <Route path="/emi-calculator" element={<EmiCalculatorPage />} />
 
       <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
