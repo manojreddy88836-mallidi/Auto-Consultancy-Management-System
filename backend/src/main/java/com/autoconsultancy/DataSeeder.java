@@ -834,7 +834,9 @@ public class DataSeeder {
         seedModelIfAbsent(heroMore, "Pleasure+ XTEC BS6", "Scooter", "Petrol", 2022, 2024);
         seedModelIfAbsent(heroMore, "Splendor+ Black and Accent", "Commuter", "Petrol", 2022, 2024);
 
-        System.out.println("[DataSeeder] Bike model seeding complete.");
+        long totalModels = bikeModelRepository.count();
+        long totalBrands = manufacturerRepository.count();
+        System.out.println("[DataSeeder] Seeding complete. DB now has: " + totalModels + " models across " + totalBrands + " brands.");
     }
 
     private void seedWorker(String email, String password, String firstName, String lastName, String empId, String dept, String desig) {
@@ -908,3 +910,4 @@ public class DataSeeder {
     }
 
 }
+
