@@ -9,7 +9,7 @@ import { getApplicationById, updateApplicationStatus, assignWorker } from '../..
 import { getDocuments } from '../../api/documentApi';
 import { getWorkers } from '../../api/adminApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 const saleBadge = (s) => ({
   AVAILABLE: 'bg-green-100 text-green-700',
   RESERVED:  'bg-amber-100 text-amber-700',

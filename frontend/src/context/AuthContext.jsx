@@ -62,6 +62,25 @@ export const AuthProvider = ({ children }) => {
     return _handleAuthResponse(response);
   };
 
+  /**
+   * Admin Step 1: initiates the OTP flow.
+   * Returns the challenge object { otpToken, sentTo, expiresIn } — does NOT log in yet.
+   */
+  const adminInitiateLogin = async (email, password) => {
+    const response = await authApi.adminInitiateLogin(email, password);
+    // response.data.data = { otpToken, message, expiresIn, sentTo }
+    return response.data.data;
+  };
+
+  /**
+   * Admin Step 2: verifies the OTP and completes login.
+   * Returns full user data (same as regular login).
+   */
+  const adminCompleteLogin = async (otpToken, otp) => {
+    const response = await authApi.adminVerifyOtp(otpToken, otp);
+    return _handleAuthResponse(response);
+  };
+
   const register = async (data) => {
     const response = await authApi.register(data);
     return _handleAuthResponse(response);
@@ -99,6 +118,8 @@ export const AuthProvider = ({ children }) => {
     isWorker:   user?.role === 'WORKER',
     isCustomer: user?.role === 'CUSTOMER',
     login,
+    adminInitiateLogin,
+    adminCompleteLogin,
     register,
     logout,
     refreshUser,

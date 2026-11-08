@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import { getAvailableBikes } from '../../api/bikeInventoryApi';
 import { getAllBrands } from '../../api/brandApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 const BikeCard = ({ bike, onViewDetails, onApply }) => {
   const [imgErr, setImgErr] = useState(false);

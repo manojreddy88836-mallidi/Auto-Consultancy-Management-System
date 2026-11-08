@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import * as offerApi from '../../api/offerApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 // ── Shared helpers ─────────────────────────────────────────────────────────
 const STATUS_META = {

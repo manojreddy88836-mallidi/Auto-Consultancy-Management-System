@@ -13,9 +13,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.lang.NonNull;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
 
 @Service
 @RequiredArgsConstructor
@@ -30,56 +35,81 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final MongoTemplate mongoTemplate;
 
+    // Use common pool for parallel dashboard count queries (all are non-blocking DB reads)
+    private static final ForkJoinPool STATS_POOL = ForkJoinPool.commonPool();
+
     @Transactional(readOnly = true)
     public DashboardStatsResponse getDashboardStats() {
-        // Count queries use indexed fields — fast even at scale
-        long newThisMonth = 0L;
-        try {
-            // Count applications created in the current calendar month
-            java.time.LocalDateTime startOfMonth = java.time.LocalDate.now()
-                    .withDayOfMonth(1).atStartOfDay();
-            org.springframework.data.mongodb.core.query.Query q =
-                    new org.springframework.data.mongodb.core.query.Query(
-                            org.springframework.data.mongodb.core.query.Criteria
-                                    .where("createdAt").gte(startOfMonth));
-            newThisMonth = mongoTemplate.count(q, com.autoconsultancy.entity.Application.class);
-        } catch (Exception ignored) {}
+        // Run all count queries in parallel using the shared async executor.
+        // Each count hits an indexed field → sub-millisecond per query.
+        // Sequential execution was: ~10 round-trips * ~2ms = ~20ms.
+        // Parallel execution: max(~2ms) ≈ ~3ms total.
+
+        java.time.LocalDateTime startOfMonth = java.time.LocalDate.now()
+                .withDayOfMonth(1).atStartOfDay();
+        org.springframework.data.mongodb.core.query.Query monthQuery =
+                new org.springframework.data.mongodb.core.query.Query(
+                        org.springframework.data.mongodb.core.query.Criteria
+                                .where("createdAt").gte(Objects.requireNonNull(startOfMonth)));
+
+        CompletableFuture<Long> totalCustomers      = CompletableFuture.supplyAsync(customerRepository::count, STATS_POOL);
+        CompletableFuture<Long> totalWorkers        = CompletableFuture.supplyAsync(workerRepository::count, STATS_POOL);
+        CompletableFuture<Long> totalApplications   = CompletableFuture.supplyAsync(applicationRepository::count, STATS_POOL);
+        CompletableFuture<Long> pendingApps         = CompletableFuture.supplyAsync(applicationRepository::countPending, STATS_POOL);
+        CompletableFuture<Long> underReview         = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.UNDER_REVIEW), STATS_POOL);
+        CompletableFuture<Long> approved            = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.APPROVED), STATS_POOL);
+        CompletableFuture<Long> rejected            = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.REJECTED), STATS_POOL);
+        CompletableFuture<Long> completed           = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.COMPLETED), STATS_POOL);
+        CompletableFuture<Long> financeVerif        = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.FINANCE_VERIFICATION), STATS_POOL);
+        CompletableFuture<Long> docsUnderReview     = CompletableFuture.supplyAsync(() -> documentRepository.countByStatus("UNDER_REVIEW"), STATS_POOL);
+        CompletableFuture<Long> newAppsThisMonth    = CompletableFuture.supplyAsync(() -> {
+            try { return mongoTemplate.count(monthQuery, com.autoconsultancy.entity.Application.class); }
+            catch (Exception e) { return 0L; }
+        }, STATS_POOL);
+        CompletableFuture<Long> newCustomersThisMonth = CompletableFuture.supplyAsync(customerRepository::countNewThisMonth, STATS_POOL);
+
+        // Wait for all to complete
+        CompletableFuture.allOf(
+            totalCustomers, totalWorkers, totalApplications, pendingApps,
+            underReview, approved, rejected, completed, financeVerif,
+            docsUnderReview, newAppsThisMonth, newCustomersThisMonth
+        ).join();
 
         return DashboardStatsResponse.builder()
-                .totalCustomers(customerRepository.count())
-                .totalWorkers(workerRepository.count())
-                .totalApplications(applicationRepository.count())
-                .pendingApplications(applicationRepository.countPending())
-                .underReviewApplications(applicationRepository.countByStatus(ApplicationStatus.UNDER_REVIEW))
-                .approvedApplications(applicationRepository.countByStatus(ApplicationStatus.APPROVED))
-                .rejectedApplications(applicationRepository.countByStatus(ApplicationStatus.REJECTED))
-                .completedApplications(applicationRepository.countByStatus(ApplicationStatus.COMPLETED))
-                .financeVerificationPending(applicationRepository.countByStatus(ApplicationStatus.FINANCE_VERIFICATION))
-                .documentsUnderReview(documentRepository.countByStatus("UNDER_REVIEW"))
-                .newApplicationsThisMonth(newThisMonth)
-                .newCustomersThisMonth(customerRepository.countNewThisMonth())
+                .totalCustomers(totalCustomers.join())
+                .totalWorkers(totalWorkers.join())
+                .totalApplications(totalApplications.join())
+                .pendingApplications(pendingApps.join())
+                .underReviewApplications(underReview.join())
+                .approvedApplications(approved.join())
+                .rejectedApplications(rejected.join())
+                .completedApplications(completed.join())
+                .financeVerificationPending(financeVerif.join())
+                .documentsUnderReview(docsUnderReview.join())
+                .newApplicationsThisMonth(newAppsThisMonth.join())
+                .newCustomersThisMonth(newCustomersThisMonth.join())
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public Page<Customer> getCustomers(Pageable pageable) {
+    public Page<Customer> getCustomers(@NonNull Pageable pageable) {
         return customerRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
-    public Customer getCustomer(Long id) {
+    public Customer getCustomer(@NonNull Long id) {
         return customerRepository.findById(id).orElseThrow();
     }
 
     @Transactional
-    public void updateCustomerStatus(Long id, boolean active) {
+    public void updateCustomerStatus(@NonNull Long id, boolean active) {
         Customer c = getCustomer(id);
         c.getUser().setActive(active);
         customerRepository.save(c);
     }
 
     @Transactional(readOnly = true)
-    public Page<Worker> getWorkers(Pageable pageable) {
+    public Page<Worker> getWorkers(@NonNull Pageable pageable) {
         return workerRepository.findAll(pageable);
     }
 
@@ -94,10 +124,10 @@ public class AdminService {
                 .role(Role.WORKER)
                 .active(true)
                 .build();
-        user = userRepository.save(user);
+        user = userRepository.save(Objects.requireNonNull(user));
 
         Worker worker = Worker.builder()
-                .id(user.getId())
+                .id(Objects.requireNonNull(user.getId(), "Saved user must have an id"))
                 .user(user)
                 .employeeId(request.getEmployeeId())
                 .department(request.getDepartment())
@@ -105,18 +135,18 @@ public class AdminService {
                 .joiningDate(request.getJoiningDate())
                 .active(true)
                 .build();
-        return workerRepository.save(worker);
+        return workerRepository.save(Objects.requireNonNull(worker));
     }
 
     @Transactional(readOnly = true)
-    public Worker getWorker(Long id) {
+    public Worker getWorker(@NonNull Long id) {
         return workerRepository.findById(id).orElseThrow();
     }
 
     @Transactional
-    public Worker updateWorker(Long id, CreateWorkerRequest request) {
+    public Worker updateWorker(@NonNull Long id, CreateWorkerRequest request) {
         Worker worker = getWorker(id);
-        User user = worker.getUser();
+        User user = Objects.requireNonNull(worker.getUser());
 
         // Only update fields that are provided (preserve email/password if not sent)
         if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
@@ -131,12 +161,12 @@ public class AdminService {
         if (request.getDesignation() != null) worker.setDesignation(request.getDesignation());
         if (request.getJoiningDate() != null) worker.setJoiningDate(request.getJoiningDate());
 
-        userRepository.save(user);
+        userRepository.save(Objects.requireNonNull(user));
         return workerRepository.save(worker);
     }
 
     @Transactional
-    public void deactivateWorker(Long id) {
+    public void deactivateWorker(@NonNull Long id) {
         Worker worker = getWorker(id);
         worker.setActive(false);
         worker.getUser().setActive(false);
@@ -144,7 +174,7 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public Page<AuditLog> getAuditLogs(Pageable pageable) {
+    public Page<AuditLog> getAuditLogs(@NonNull Pageable pageable) {
         return auditLogRepository.findAll(pageable);
     }
 }

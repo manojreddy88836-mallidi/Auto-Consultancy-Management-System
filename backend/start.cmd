@@ -18,7 +18,7 @@ set PATH=%JAVA_HOME%\bin;%PATH%
 :: Verify Java
 java -version >nul 2>&1
 if errorlevel 1 (
-    echo [ERROR] Java not found. Please install Java 17+ and set JAVA_HOME.
+    echo [ERROR] Java not found. Please install Java 25+ and set JAVA_HOME.
     pause & exit /b 1
 )
 echo [OK]   Java: %JAVA_HOME%

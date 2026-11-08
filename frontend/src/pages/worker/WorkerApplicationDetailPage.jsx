@@ -8,7 +8,7 @@ import {
 import { getApplicationById, updateApplicationStatus } from '../../api/applicationApi';
 import { getDocuments, updateDocumentStatus } from '../../api/documentApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 const ALL_STATUSES = [
   'UNDER_REVIEW','DOCUMENT_VERIFICATION','FINANCE_VERIFICATION','APPROVED','REJECTED','COMPLETED'

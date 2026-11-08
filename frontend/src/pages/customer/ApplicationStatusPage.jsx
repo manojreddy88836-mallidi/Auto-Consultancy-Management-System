@@ -7,6 +7,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { getApplicationById } from '../../api/applicationApi';
 import { getDocuments } from '../../api/documentApi';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 const STATUS_ORDER = [
   'SUBMITTED','UNDER_REVIEW','DOCUMENT_VERIFICATION',
@@ -168,7 +169,7 @@ const ApplicationStatusPage = () => {
           {app.bikeImageUrl && (
             <div className="h-36 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
               <img
-                src={`http://localhost:8080${app.bikeImageUrl}`}
+                src={`${BACKEND_BASE}${app.bikeImageUrl}`}
                 alt={app.modelName}
                 className="w-full h-full object-cover"
               />

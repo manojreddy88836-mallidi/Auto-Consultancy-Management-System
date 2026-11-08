@@ -10,7 +10,7 @@ import { getPublicBikeDetail } from '../../api/bikeInventoryApi';
 import * as offerApi from '../../api/offerApi';
 import useAuth from '../../hooks/useAuth';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 const imgUrl = (url) => url ? `${BACKEND_BASE}${url}` : null;
 const fmtINR = (v) => v != null ? '₹' + Number(v).toLocaleString('en-IN') : '—';
 

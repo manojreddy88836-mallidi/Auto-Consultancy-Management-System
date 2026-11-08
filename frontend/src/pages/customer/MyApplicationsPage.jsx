@@ -7,7 +7,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { getMyApplications } from '../../api/applicationApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 const statusStyle = {
   DRAFT:                 { cls: 'bg-gray-100 text-gray-600',     icon: Edit3,       label: 'Draft'                },
