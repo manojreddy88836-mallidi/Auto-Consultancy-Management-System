@@ -10,7 +10,6 @@ import com.autoconsultancy.entity.User;
 import com.autoconsultancy.entity.Worker;
 import com.autoconsultancy.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -21,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +34,9 @@ public class AdminService {
     private final AuditLogRepository auditLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final MongoTemplate mongoTemplate;
-    @Qualifier("emailTaskExecutor")
-    private final Executor taskExecutor;
+
+    // Use common pool for parallel dashboard count queries (all are non-blocking DB reads)
+    private static final ForkJoinPool STATS_POOL = ForkJoinPool.commonPool();
 
     @Transactional(readOnly = true)
     public DashboardStatsResponse getDashboardStats() {
@@ -52,21 +52,21 @@ public class AdminService {
                         org.springframework.data.mongodb.core.query.Criteria
                                 .where("createdAt").gte(Objects.requireNonNull(startOfMonth)));
 
-        CompletableFuture<Long> totalCustomers      = CompletableFuture.supplyAsync(customerRepository::count, taskExecutor);
-        CompletableFuture<Long> totalWorkers        = CompletableFuture.supplyAsync(workerRepository::count, taskExecutor);
-        CompletableFuture<Long> totalApplications   = CompletableFuture.supplyAsync(applicationRepository::count, taskExecutor);
-        CompletableFuture<Long> pendingApps         = CompletableFuture.supplyAsync(applicationRepository::countPending, taskExecutor);
-        CompletableFuture<Long> underReview         = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.UNDER_REVIEW), taskExecutor);
-        CompletableFuture<Long> approved            = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.APPROVED), taskExecutor);
-        CompletableFuture<Long> rejected            = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.REJECTED), taskExecutor);
-        CompletableFuture<Long> completed           = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.COMPLETED), taskExecutor);
-        CompletableFuture<Long> financeVerif        = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.FINANCE_VERIFICATION), taskExecutor);
-        CompletableFuture<Long> docsUnderReview     = CompletableFuture.supplyAsync(() -> documentRepository.countByStatus("UNDER_REVIEW"), taskExecutor);
+        CompletableFuture<Long> totalCustomers      = CompletableFuture.supplyAsync(customerRepository::count, STATS_POOL);
+        CompletableFuture<Long> totalWorkers        = CompletableFuture.supplyAsync(workerRepository::count, STATS_POOL);
+        CompletableFuture<Long> totalApplications   = CompletableFuture.supplyAsync(applicationRepository::count, STATS_POOL);
+        CompletableFuture<Long> pendingApps         = CompletableFuture.supplyAsync(applicationRepository::countPending, STATS_POOL);
+        CompletableFuture<Long> underReview         = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.UNDER_REVIEW), STATS_POOL);
+        CompletableFuture<Long> approved            = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.APPROVED), STATS_POOL);
+        CompletableFuture<Long> rejected            = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.REJECTED), STATS_POOL);
+        CompletableFuture<Long> completed           = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.COMPLETED), STATS_POOL);
+        CompletableFuture<Long> financeVerif        = CompletableFuture.supplyAsync(() -> applicationRepository.countByStatus(ApplicationStatus.FINANCE_VERIFICATION), STATS_POOL);
+        CompletableFuture<Long> docsUnderReview     = CompletableFuture.supplyAsync(() -> documentRepository.countByStatus("UNDER_REVIEW"), STATS_POOL);
         CompletableFuture<Long> newAppsThisMonth    = CompletableFuture.supplyAsync(() -> {
             try { return mongoTemplate.count(monthQuery, com.autoconsultancy.entity.Application.class); }
             catch (Exception e) { return 0L; }
-        }, taskExecutor);
-        CompletableFuture<Long> newCustomersThisMonth = CompletableFuture.supplyAsync(customerRepository::countNewThisMonth, taskExecutor);
+        }, STATS_POOL);
+        CompletableFuture<Long> newCustomersThisMonth = CompletableFuture.supplyAsync(customerRepository::countNewThisMonth, STATS_POOL);
 
         // Wait for all to complete
         CompletableFuture.allOf(
