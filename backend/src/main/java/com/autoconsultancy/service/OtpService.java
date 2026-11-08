@@ -39,9 +39,6 @@ public class OtpService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${admin.email}")
-    private String authorizedAdminEmail;
-
     @Value("${admin.otp.expiry-minutes:5}")
     private int expiryMinutes;
 

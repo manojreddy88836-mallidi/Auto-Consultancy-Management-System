@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -33,8 +35,16 @@ public class DataSeeder {
     private final PasswordEncoder passwordEncoder;
     private final SequenceGeneratorService sequenceGenerator;
 
-    @org.springframework.beans.factory.annotation.Value("${admin.email:venkatamanojreddymallidi@gmail.com}")
-    private String adminEmail;
+    @org.springframework.beans.factory.annotation.Value("${admin.emails:venkatamanojreddymallidi@gmail.com,ganeshautoconsultancy358@gmail.com}")
+    private String adminEmailsRaw;
+
+    /** Returns the trimmed, comma-separated list of authorized admin emails. */
+    private List<String> getAdminEmails() {
+        return Arrays.stream(adminEmailsRaw.split(","))
+                .map(String::trim)
+                .filter(e -> !e.isEmpty())
+                .collect(Collectors.toList());
+    }
 
     @org.springframework.beans.factory.annotation.Value("${SEED_ADMIN_PASSWORD:Admin@123}")
     private String adminPassword;
@@ -43,51 +53,63 @@ public class DataSeeder {
 
     @EventListener(ApplicationReadyEvent.class)
     public void seedData() {
+        List<String> adminEmails = getAdminEmails();
+        // Use the first admin email as the primary (for migration logic)
+        String primaryAdminEmail = adminEmails.isEmpty()
+                ? "venkatamanojreddymallidi@gmail.com"
+                : adminEmails.get(0);
+
         // ── Admin email migration ─────────────────────────────────────────────
-        // If the old admin email exists and the new one doesn't, migrate it.
+        // If the old admin email exists and the primary one doesn't, migrate it.
         final String OLD_ADMIN_EMAIL = "admin@autoconsultancy.com";
-        if (!adminEmail.equalsIgnoreCase(OLD_ADMIN_EMAIL)) {
+        if (!primaryAdminEmail.equalsIgnoreCase(OLD_ADMIN_EMAIL)) {
             userRepository.findByEmail(OLD_ADMIN_EMAIL).ifPresent(oldAdmin -> {
-                if (!userRepository.findByEmail(adminEmail).isPresent()) {
-                    oldAdmin.setEmail(adminEmail);
+                if (!userRepository.findByEmail(primaryAdminEmail).isPresent()) {
+                    oldAdmin.setEmail(primaryAdminEmail);
                     userRepository.save(oldAdmin);
-                    System.out.println("[DataSeeder] Admin email migrated: " + OLD_ADMIN_EMAIL + " → " + adminEmail);
+                    System.out.println("[DataSeeder] Admin email migrated: " + OLD_ADMIN_EMAIL + " → " + primaryAdminEmail);
                 }
             });
         }
         // ─────────────────────────────────────────────────────────────────────
 
-        // ── Sync admin password only if it changed (avoids BCrypt re-hash on every startup) ──
-        userRepository.findByEmail(adminEmail).ifPresent(existingAdmin -> {
-            // Only re-hash and save if the stored hash doesn't match the env password.
-            // This prevents a ~400ms BCrypt-12 penalty on every server restart.
-            if (!passwordEncoder.matches(adminPassword, existingAdmin.getPassword())) {
-                existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
-                userRepository.save(existingAdmin);
-                System.out.println("[DataSeeder] Admin password updated (changed in env var).");
-            } else {
-                System.out.println("[DataSeeder] Admin password unchanged — skipping re-hash.");
+        // ── Seed / sync ALL authorized admin emails ───────────────────────────
+        for (String email : adminEmails) {
+            // Sync admin password if it changed (avoids BCrypt re-hash on every startup)
+            userRepository.findByEmail(email).ifPresent(existingAdmin -> {
+                if (!passwordEncoder.matches(adminPassword, existingAdmin.getPassword())) {
+                    existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
+                    userRepository.save(existingAdmin);
+                    System.out.println("[DataSeeder] Admin password updated: " + email);
+                } else {
+                    System.out.println("[DataSeeder] Admin password unchanged — skipping re-hash: " + email);
+                }
+            });
+
+            // Create admin account if it doesn't exist
+            if (!userRepository.findByEmail(email).isPresent()) {
+                long adminId = sequenceGenerator.generateSequence("users");
+                User admin = User.builder()
+                        .id(adminId)
+                        .email(email)
+                        .password(passwordEncoder.encode(adminPassword))
+                        .firstName("Admin")
+                        .lastName("User")
+                        .role(Role.ADMIN)
+                        .active(true)
+                        .build();
+                userRepository.save(admin);
+                System.out.println("[DataSeeder] Admin seeded: " + email);
+
+                // Seed workers only on first-ever admin creation (primary admin)
+                if (email.equalsIgnoreCase(primaryAdminEmail)) {
+                    seedWorker("worker1@autoconsultancy.com", workerPassword, "Worker", "One", "EMP1001", "Operations", "Senior Consultant");
+                    seedWorker("worker2@autoconsultancy.com", workerPassword, "Worker", "Two", "EMP1002", "Finance", "Finance Analyst");
+                    seedWorker("worker3@autoconsultancy.com", workerPassword, "Worker", "Three", "EMP1003", "Verification", "Document Specialist");
+                }
             }
-        });
-        // ─────────────────────────────────────────────────────────────────────
-
-        if (!userRepository.findByEmail(adminEmail).isPresent()) {
-            long adminId = sequenceGenerator.generateSequence("users");
-            User admin = User.builder()
-                    .id(adminId)
-                    .email(adminEmail)
-                    .password(passwordEncoder.encode(adminPassword))
-                    .firstName("Super")
-                    .lastName("Admin")
-                    .role(Role.ADMIN)
-                    .active(true)
-                    .build();
-            userRepository.save(admin);
-
-            seedWorker("worker1@autoconsultancy.com", workerPassword, "Worker", "One", "EMP1001", "Operations", "Senior Consultant");
-            seedWorker("worker2@autoconsultancy.com", workerPassword, "Worker", "Two", "EMP1002", "Finance", "Finance Analyst");
-            seedWorker("worker3@autoconsultancy.com", workerPassword, "Worker", "Three", "EMP1003", "Verification", "Document Specialist");
         }
+        // ─────────────────────────────────────────────────────────────────────
 
         ensureDefaultUsersActive();
 
@@ -172,14 +194,14 @@ public class DataSeeder {
     }
 
     private void ensureDefaultUsersActive() {
-        // Keep workers active; admin email is managed via admin.email property
-        List<String> defaultEmails = List.of(
+        // Keep all seeded accounts active
+        List<String> defaultEmails = new java.util.ArrayList<>(getAdminEmails());
+        defaultEmails.addAll(List.of(
                 "admin@autoconsultancy.com",
-                "venkatamanojreddymallidi@gmail.com",
                 "worker1@autoconsultancy.com",
                 "worker2@autoconsultancy.com",
                 "worker3@autoconsultancy.com"
-        );
+        ));
         for (String email : defaultEmails) {
             userRepository.findByEmail(email).ifPresent(u -> {
                 if (!u.isActive()) {

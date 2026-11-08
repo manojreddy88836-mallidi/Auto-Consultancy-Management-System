@@ -36,8 +36,13 @@ const LoginPage = () => {
     setLoading(true);
     try {
       // Detect if admin email is being used → route through OTP
-      // The backend will also enforce this — this is just a UX optimization
-      const isAdminEmail = formData.email.toLowerCase() === 'venkatamanojreddymallidi@gmail.com';
+      // The backend also enforces this — this is just a UX optimization to avoid
+      // calling the wrong endpoint. Update this list whenever ADMIN_EMAILS env var changes.
+      const AUTHORIZED_ADMIN_EMAILS = [
+        'venkatamanojreddymallidi@gmail.com',
+        'ganeshautoconsultancy358@gmail.com',
+      ];
+      const isAdminEmail = AUTHORIZED_ADMIN_EMAILS.includes(formData.email.toLowerCase().trim());
 
       if (isAdminEmail) {
         // Admin two-step: Step 1 — validate credentials, get OTP challenge

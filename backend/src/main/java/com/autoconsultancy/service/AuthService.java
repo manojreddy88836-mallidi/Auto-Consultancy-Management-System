@@ -26,6 +26,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Authentication service.
  *
@@ -51,8 +55,16 @@ public class AuthService {
     private final UserDetailsService userDetailsService;
     private final OtpService otpService;
 
-    @Value("${admin.email}")
-    private String authorizedAdminEmail;
+    @Value("${admin.emails}")
+    private String authorizedAdminEmailsRaw;
+
+    /** Lazily-parsed, trimmed list of authorized admin emails. */
+    private List<String> getAuthorizedAdminEmails() {
+        return Arrays.stream(authorizedAdminEmailsRaw.split(","))
+                .map(String::trim)
+                .filter(e -> !e.isEmpty())
+                .collect(Collectors.toList());
+    }
 
     // ── Worker / Customer login (unchanged) ───────────────────────────────────
 
@@ -89,8 +101,10 @@ public class AuthService {
             throw new UnauthorizedException("Access denied.");
         }
 
-        // Extra guard: only the authorized admin email may proceed
-        if (!user.getEmail().equalsIgnoreCase(authorizedAdminEmail)) {
+        // Extra guard: only authorized admin emails may proceed
+        boolean isAuthorized = getAuthorizedAdminEmails().stream()
+                .anyMatch(e -> e.equalsIgnoreCase(user.getEmail()));
+        if (!isAuthorized) {
             log.warn("Unauthorized admin login attempt for email: {}", user.getEmail());
             throw new UnauthorizedException("This email is not authorized for admin access.");
         }
