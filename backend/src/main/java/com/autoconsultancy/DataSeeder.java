@@ -106,32 +106,518 @@ public class DataSeeder {
 
         ensureDefaultUsersActive();
 
-        if (manufacturerRepository.count() > 0) {
-            return;
-        }
+        seedAllBrandsAndModels();
+    }
 
-        // 3. Seed Brands
-        Manufacturer royalEnfield = seedBrand("ROYAL ENFIELD", "India");
-        seedModel(royalEnfield, "Classic 350", "Cruiser", "Petrol", 2010, 2024);
-        seedModel(royalEnfield, "Bullet 350", "Cruiser", "Petrol", 2010, 2024);
-        seedModel(royalEnfield, "Meteor 350", "Cruiser", "Petrol", 2020, 2024);
-        seedModel(royalEnfield, "Himalayan", "Adventure", "Petrol", 2016, 2024);
-        seedModel(royalEnfield, "Interceptor 650", "Cruiser", "Petrol", 2019, 2024);
+    /**
+     * Seeds all manufacturers and models.
+     * Uses getOrCreate pattern — safe to run on existing data (no duplicates).
+     */
+    private void seedAllBrandsAndModels() {
+        // ── ROYAL ENFIELD ────────────────────────────────────────────────────────
+        Manufacturer royalEnfield = getOrCreateBrand("ROYAL ENFIELD", "India");
+        seedModelIfAbsent(royalEnfield, "Classic 350", "Cruiser", "Petrol", 2010, 2024);
+        seedModelIfAbsent(royalEnfield, "Bullet 350", "Cruiser", "Petrol", 2001, 2024);
+        seedModelIfAbsent(royalEnfield, "Bullet 500", "Cruiser", "Petrol", 2001, 2020);
+        seedModelIfAbsent(royalEnfield, "Meteor 350", "Cruiser", "Petrol", 2020, 2024);
+        seedModelIfAbsent(royalEnfield, "Himalayan", "Adventure", "Petrol", 2016, 2024);
+        seedModelIfAbsent(royalEnfield, "Himalayan 450", "Adventure", "Petrol", 2023, 2024);
+        seedModelIfAbsent(royalEnfield, "Interceptor 650", "Cruiser", "Petrol", 2019, 2024);
+        seedModelIfAbsent(royalEnfield, "Continental GT 650", "Cafe Racer", "Petrol", 2019, 2024);
+        seedModelIfAbsent(royalEnfield, "Hunter 350", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(royalEnfield, "Guerrilla 450", "Roadster", "Petrol", 2024, 2024);
+        seedModelIfAbsent(royalEnfield, "Bear 650", "Scrambler", "Petrol", 2024, 2024);
+        seedModelIfAbsent(royalEnfield, "Shotgun 650", "Bobber", "Petrol", 2024, 2024);
+        seedModelIfAbsent(royalEnfield, "Super Meteor 650", "Cruiser", "Petrol", 2023, 2024);
+        seedModelIfAbsent(royalEnfield, "Scram 411", "Scrambler", "Petrol", 2022, 2024);
+        seedModelIfAbsent(royalEnfield, "Classic 500", "Cruiser", "Petrol", 2001, 2020);
+        seedModelIfAbsent(royalEnfield, "Thunderbird 350", "Touring", "Petrol", 2002, 2019);
+        seedModelIfAbsent(royalEnfield, "Thunderbird 500", "Touring", "Petrol", 2002, 2019);
+        seedModelIfAbsent(royalEnfield, "Electra 350", "Cruiser", "Petrol", 2001, 2018);
 
-        Manufacturer tvs = seedBrand("TVS", "India");
-        seedModel(tvs, "Apache RTR 160", "Sports", "Petrol", 2010, 2024);
-        seedModel(tvs, "Jupiter", "Scooter", "Petrol", 2013, 2024);
+        // ── HERO MOTOCORP ────────────────────────────────────────────────────────
+        Manufacturer hero = getOrCreateBrand("HERO", "India");
+        seedModelIfAbsent(hero, "Splendor Plus", "Commuter", "Petrol", 2001, 2024);
+        seedModelIfAbsent(hero, "Splendor+ XTEC", "Commuter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(hero, "Splendor iSmart", "Commuter", "Petrol", 2015, 2024);
+        seedModelIfAbsent(hero, "HF Deluxe", "Commuter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(hero, "HF 100", "Commuter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(hero, "Passion Pro", "Commuter", "Petrol", 2001, 2024);
+        seedModelIfAbsent(hero, "Passion XPro", "Commuter", "Petrol", 2014, 2024);
+        seedModelIfAbsent(hero, "Super Splendor", "Commuter", "Petrol", 2003, 2024);
+        seedModelIfAbsent(hero, "Glamour", "Commuter", "Petrol", 2005, 2024);
+        seedModelIfAbsent(hero, "Glamour XTEC", "Commuter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(hero, "Destini 125", "Scooter", "Petrol", 2018, 2024);
+        seedModelIfAbsent(hero, "Destini 125 XTECH", "Scooter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(hero, "Maestro Edge 110", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(hero, "Maestro Edge 125", "Scooter", "Petrol", 2018, 2024);
+        seedModelIfAbsent(hero, "Pleasure+ 110", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(hero, "Pleasure+ XTEC", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(hero, "Xoom 110", "Scooter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(hero, "Xtreme 160R", "Sports", "Petrol", 2020, 2024);
+        seedModelIfAbsent(hero, "Xtreme 160R 4V", "Sports", "Petrol", 2022, 2024);
+        seedModelIfAbsent(hero, "Xtreme 200S", "Sports", "Petrol", 2019, 2024);
+        seedModelIfAbsent(hero, "Xtreme 125R", "Sports", "Petrol", 2023, 2024);
+        seedModelIfAbsent(hero, "Mavrick 440", "Roadster", "Petrol", 2023, 2024);
+        seedModelIfAbsent(hero, "Karizma XMR", "Sports", "Petrol", 2023, 2024);
+        seedModelIfAbsent(hero, "Xpulse 200", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(hero, "Xpulse 200T", "Touring", "Petrol", 2019, 2024);
+        seedModelIfAbsent(hero, "Xpulse 200 4V", "Adventure", "Petrol", 2021, 2024);
+        seedModelIfAbsent(hero, "CD 100", "Commuter", "Petrol", 2001, 2010);
+        seedModelIfAbsent(hero, "CD Deluxe", "Commuter", "Petrol", 2001, 2015);
+        seedModelIfAbsent(hero, "CBZ Xtreme", "Sports", "Petrol", 2003, 2017);
+        seedModelIfAbsent(hero, "Hunk", "Sports", "Petrol", 2007, 2016);
+        seedModelIfAbsent(hero, "Ignitor", "Commuter", "Petrol", 2012, 2018);
+        seedModelIfAbsent(hero, "Dash", "Scooter", "Petrol", 2014, 2016);
+        seedModelIfAbsent(hero, "Optima Plus (EV)", "Scooter", "Electric", 2022, 2024);
 
-        Manufacturer bajaj = seedBrand("BAJAJ", "India");
-        seedModel(bajaj, "Pulsar 150", "Sports", "Petrol", 2010, 2024);
-        seedModel(bajaj, "Dominar 400", "Touring", "Petrol", 2017, 2024);
+        // ── HONDA ────────────────────────────────────────────────────────────────
+        Manufacturer honda = getOrCreateBrand("HONDA", "Japan");
+        seedModelIfAbsent(honda, "Activa 6G", "Scooter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "Activa 125", "Scooter", "Petrol", 2013, 2024);
+        seedModelIfAbsent(honda, "Activa 125 Premium", "Scooter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(honda, "Activa EV", "Scooter", "Electric", 2024, 2024);
+        seedModelIfAbsent(honda, "Shine 100", "Commuter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(honda, "Shine", "Commuter", "Petrol", 2006, 2024);
+        seedModelIfAbsent(honda, "CB Shine SP", "Commuter", "Petrol", 2015, 2024);
+        seedModelIfAbsent(honda, "Livo", "Commuter", "Petrol", 2015, 2024);
+        seedModelIfAbsent(honda, "Dream Yuga", "Commuter", "Petrol", 2012, 2020);
+        seedModelIfAbsent(honda, "Dream Neo", "Commuter", "Petrol", 2013, 2019);
+        seedModelIfAbsent(honda, "SP 125", "Commuter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "SP 160", "Commuter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(honda, "Unicorn", "Commuter", "Petrol", 2004, 2024);
+        seedModelIfAbsent(honda, "CB300R", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "CB300F", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(honda, "CB350", "Roadster", "Petrol", 2020, 2024);
+        seedModelIfAbsent(honda, "CB350RS", "Cafe Racer", "Petrol", 2021, 2024);
+        seedModelIfAbsent(honda, "CB500F", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "CB500X", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "CB650R", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "CBR650R", "Sports", "Petrol", 2019, 2024);
+        seedModelIfAbsent(honda, "Hornet 2.0", "Roadster", "Petrol", 2020, 2024);
+        seedModelIfAbsent(honda, "NX200", "Adventure", "Petrol", 2022, 2024);
+        seedModelIfAbsent(honda, "NX500", "Adventure", "Petrol", 2023, 2024);
+        seedModelIfAbsent(honda, "Africa Twin", "Adventure", "Petrol", 2016, 2024);
+        seedModelIfAbsent(honda, "Gold Wing", "Touring", "Petrol", 2001, 2024);
+        seedModelIfAbsent(honda, "CBR1000RR-R", "Superbike", "Petrol", 2020, 2024);
+        seedModelIfAbsent(honda, "Dio 110", "Scooter", "Petrol", 2012, 2024);
+        seedModelIfAbsent(honda, "Dio 125", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(honda, "Grazia 125", "Scooter", "Petrol", 2017, 2023);
+        seedModelIfAbsent(honda, "Aviator", "Scooter", "Petrol", 2004, 2020);
+        seedModelIfAbsent(honda, "Cliq", "Scooter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(honda, "Navi", "Crossover", "Petrol", 2016, 2024);
+        seedModelIfAbsent(honda, "X-Blade", "Sports", "Petrol", 2018, 2024);
+        seedModelIfAbsent(honda, "CBR250R", "Sports", "Petrol", 2011, 2017);
+        seedModelIfAbsent(honda, "CBR400R", "Sports", "Petrol", 2023, 2024);
 
-        Manufacturer hero = seedBrand("HERO", "India");
-        seedModel(hero, "Splendor Plus", "Commuter", "Petrol", 2012, 2024);
+        // ── TVS ──────────────────────────────────────────────────────────────────
+        Manufacturer tvs = getOrCreateBrand("TVS", "India");
+        seedModelIfAbsent(tvs, "Apache RTR 160", "Sports", "Petrol", 2007, 2024);
+        seedModelIfAbsent(tvs, "Apache RTR 160 4V", "Sports", "Petrol", 2018, 2024);
+        seedModelIfAbsent(tvs, "Apache RTR 180", "Sports", "Petrol", 2010, 2024);
+        seedModelIfAbsent(tvs, "Apache RTR 200 4V", "Sports", "Petrol", 2016, 2024);
+        seedModelIfAbsent(tvs, "Apache RR 310", "Superbike", "Petrol", 2017, 2024);
+        seedModelIfAbsent(tvs, "Jupiter", "Scooter", "Petrol", 2013, 2024);
+        seedModelIfAbsent(tvs, "Jupiter 125", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(tvs, "Jupiter ZX", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(tvs, "NTORQ 125", "Scooter", "Petrol", 2018, 2024);
+        seedModelIfAbsent(tvs, "NTORQ 125 Race Edition", "Scooter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(tvs, "iQube Electric", "Scooter", "Electric", 2020, 2024);
+        seedModelIfAbsent(tvs, "iQube ST", "Scooter", "Electric", 2022, 2024);
+        seedModelIfAbsent(tvs, "iQube S", "Scooter", "Electric", 2022, 2024);
+        seedModelIfAbsent(tvs, "Raider 125", "Commuter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(tvs, "Raider 125 Drum", "Commuter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(tvs, "Ronin", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(tvs, "Sport", "Commuter", "Petrol", 2001, 2024);
+        seedModelIfAbsent(tvs, "Star City+", "Commuter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(tvs, "XL100", "Moped", "Petrol", 2001, 2024);
+        seedModelIfAbsent(tvs, "XL100 Heavy Duty", "Moped", "Petrol", 2016, 2024);
+        seedModelIfAbsent(tvs, "Victor", "Commuter", "Petrol", 2001, 2018);
+        seedModelIfAbsent(tvs, "Wego", "Scooter", "Petrol", 2011, 2019);
+        seedModelIfAbsent(tvs, "Scooty Pep+", "Scooter", "Petrol", 2001, 2024);
+        seedModelIfAbsent(tvs, "Scooty Zest 110", "Scooter", "Petrol", 2014, 2024);
+        seedModelIfAbsent(tvs, "Fiero 125", "Sports", "Petrol", 2001, 2008);
+        seedModelIfAbsent(tvs, "MAX4R", "Sports", "Petrol", 2001, 2007);
 
-        Manufacturer honda = seedBrand("HONDA", "Japan");
-        seedModel(honda, "Activa 6G", "Scooter", "Petrol", 2019, 2024);
-        seedModel(honda, "Shine", "Commuter", "Petrol", 2011, 2024);
+        // ── BAJAJ ────────────────────────────────────────────────────────────────
+        Manufacturer bajaj = getOrCreateBrand("BAJAJ", "India");
+        seedModelIfAbsent(bajaj, "Pulsar 125", "Sports", "Petrol", 2019, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar 150", "Sports", "Petrol", 2001, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar 150 Neon", "Sports", "Petrol", 2019, 2022);
+        seedModelIfAbsent(bajaj, "Pulsar 180", "Sports", "Petrol", 2001, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar 220F", "Sports", "Petrol", 2007, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar NS 160", "Sports", "Petrol", 2017, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar NS 200", "Sports", "Petrol", 2012, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar RS 200", "Sports", "Petrol", 2015, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar N160", "Sports", "Petrol", 2022, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar N250", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar F250", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(bajaj, "Pulsar P150", "Sports", "Petrol", 2022, 2024);
+        seedModelIfAbsent(bajaj, "Avenger Street 160", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(bajaj, "Avenger Cruise 220", "Cruiser", "Petrol", 2010, 2024);
+        seedModelIfAbsent(bajaj, "Avenger Street 220", "Cruiser", "Petrol", 2010, 2024);
+        seedModelIfAbsent(bajaj, "Dominar 250", "Touring", "Petrol", 2019, 2024);
+        seedModelIfAbsent(bajaj, "Dominar 400", "Touring", "Petrol", 2017, 2024);
+        seedModelIfAbsent(bajaj, "CT 100", "Commuter", "Petrol", 2004, 2024);
+        seedModelIfAbsent(bajaj, "CT 110", "Commuter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(bajaj, "CT 125X", "Commuter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(bajaj, "Platina 100", "Commuter", "Petrol", 2006, 2024);
+        seedModelIfAbsent(bajaj, "Platina 110", "Commuter", "Petrol", 2017, 2024);
+        seedModelIfAbsent(bajaj, "Platina 110 H Gear", "Commuter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(bajaj, "Chetak Electric", "Scooter", "Electric", 2020, 2024);
+        seedModelIfAbsent(bajaj, "Chetak Premium", "Scooter", "Electric", 2022, 2024);
+        seedModelIfAbsent(bajaj, "Discover 100", "Commuter", "Petrol", 2004, 2020);
+        seedModelIfAbsent(bajaj, "Discover 125", "Commuter", "Petrol", 2004, 2024);
+        seedModelIfAbsent(bajaj, "Discover 150", "Commuter", "Petrol", 2010, 2019);
+        seedModelIfAbsent(bajaj, "Boxer 100", "Commuter", "Petrol", 2001, 2015);
+        seedModelIfAbsent(bajaj, "Kristal", "Scooter", "Petrol", 2007, 2012);
+        seedModelIfAbsent(bajaj, "Freedom 125 CNG", "Commuter", "CNG", 2024, 2024);
+
+        // ── YAMAHA ───────────────────────────────────────────────────────────────
+        Manufacturer yamaha = getOrCreateBrand("YAMAHA", "Japan");
+        seedModelIfAbsent(yamaha, "FZ-S FI V4", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(yamaha, "FZ-FI V3", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(yamaha, "FZS-FI V4", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(yamaha, "FZ-X", "Crossover", "Petrol", 2021, 2024);
+        seedModelIfAbsent(yamaha, "FZ 25", "Roadster", "Petrol", 2017, 2024);
+        seedModelIfAbsent(yamaha, "FZS 25", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(yamaha, "MT-15 V2", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(yamaha, "MT-03", "Roadster", "Petrol", 2016, 2024);
+        seedModelIfAbsent(yamaha, "MT-07", "Roadster", "Petrol", 2016, 2024);
+        seedModelIfAbsent(yamaha, "MT-09", "Roadster", "Petrol", 2016, 2024);
+        seedModelIfAbsent(yamaha, "R15 V4", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(yamaha, "R15M", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(yamaha, "R15 V3", "Sports", "Petrol", 2017, 2021);
+        seedModelIfAbsent(yamaha, "R15 S", "Sports", "Petrol", 2022, 2024);
+        seedModelIfAbsent(yamaha, "R3", "Sports", "Petrol", 2015, 2024);
+        seedModelIfAbsent(yamaha, "R7", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(yamaha, "YZF-R1", "Superbike", "Petrol", 2004, 2024);
+        seedModelIfAbsent(yamaha, "Fascino 125", "Scooter", "Petrol", 2020, 2024);
+        seedModelIfAbsent(yamaha, "Fascino 125 Hybrid", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(yamaha, "Ray ZR 125", "Scooter", "Petrol", 2017, 2024);
+        seedModelIfAbsent(yamaha, "Ray ZR Street Rally", "Scooter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(yamaha, "Aerox 155", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(yamaha, "Alpha", "Scooter", "Petrol", 2014, 2020);
+        seedModelIfAbsent(yamaha, "Cygnus Ray ZR", "Scooter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(yamaha, "SS 125", "Scooter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(yamaha, "Saluto 125", "Commuter", "Petrol", 2015, 2019);
+        seedModelIfAbsent(yamaha, "SZ-RR V2", "Commuter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(yamaha, "Crux R", "Commuter", "Petrol", 2001, 2012);
+        seedModelIfAbsent(yamaha, "Libero G5", "Commuter", "Petrol", 2001, 2008);
+        seedModelIfAbsent(yamaha, "Fazer 25", "Touring", "Petrol", 2016, 2020);
+
+        // ── SUZUKI ───────────────────────────────────────────────────────────────
+        Manufacturer suzuki = getOrCreateBrand("SUZUKI", "Japan");
+        seedModelIfAbsent(suzuki, "Gixxer 150", "Sports", "Petrol", 2014, 2024);
+        seedModelIfAbsent(suzuki, "Gixxer SF 150", "Sports", "Petrol", 2015, 2024);
+        seedModelIfAbsent(suzuki, "Gixxer 250", "Sports", "Petrol", 2019, 2024);
+        seedModelIfAbsent(suzuki, "Gixxer SF 250", "Sports", "Petrol", 2019, 2024);
+        seedModelIfAbsent(suzuki, "Access 125", "Scooter", "Petrol", 2007, 2024);
+        seedModelIfAbsent(suzuki, "Access 125 Special Edition", "Scooter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(suzuki, "Burgman Street 125", "Scooter", "Petrol", 2018, 2024);
+        seedModelIfAbsent(suzuki, "Burgman Street EX", "Scooter", "Petrol", 2022, 2024);
+        seedModelIfAbsent(suzuki, "Avenis 125", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(suzuki, "V-Strom SX 250", "Adventure", "Petrol", 2022, 2024);
+        seedModelIfAbsent(suzuki, "V-Strom 650", "Adventure", "Petrol", 2016, 2024);
+        seedModelIfAbsent(suzuki, "V-Strom 1050", "Adventure", "Petrol", 2020, 2024);
+        seedModelIfAbsent(suzuki, "Hayabusa", "Superbike", "Petrol", 2001, 2024);
+        seedModelIfAbsent(suzuki, "GSX-R1000", "Superbike", "Petrol", 2001, 2020);
+        seedModelIfAbsent(suzuki, "GSX-S1000", "Roadster", "Petrol", 2015, 2024);
+        seedModelIfAbsent(suzuki, "GSX-S750", "Roadster", "Petrol", 2016, 2022);
+        seedModelIfAbsent(suzuki, "Intruder 150", "Cruiser", "Petrol", 2017, 2024);
+        seedModelIfAbsent(suzuki, "Let's 110", "Scooter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(suzuki, "Swish 125", "Scooter", "Petrol", 2012, 2018);
+        seedModelIfAbsent(suzuki, "Heat", "Commuter", "Petrol", 2007, 2014);
+        seedModelIfAbsent(suzuki, "Slingshot Plus", "Commuter", "Petrol", 2007, 2016);
+
+        // ── KTM ──────────────────────────────────────────────────────────────────
+        Manufacturer ktm = getOrCreateBrand("KTM", "Austria");
+        seedModelIfAbsent(ktm, "Duke 125", "Roadster", "Petrol", 2016, 2024);
+        seedModelIfAbsent(ktm, "Duke 200", "Roadster", "Petrol", 2012, 2024);
+        seedModelIfAbsent(ktm, "Duke 250", "Roadster", "Petrol", 2017, 2024);
+        seedModelIfAbsent(ktm, "Duke 390", "Roadster", "Petrol", 2013, 2024);
+        seedModelIfAbsent(ktm, "RC 125", "Sports", "Petrol", 2016, 2024);
+        seedModelIfAbsent(ktm, "RC 200", "Sports", "Petrol", 2014, 2024);
+        seedModelIfAbsent(ktm, "RC 390", "Sports", "Petrol", 2014, 2024);
+        seedModelIfAbsent(ktm, "250 Adventure", "Adventure", "Petrol", 2020, 2024);
+        seedModelIfAbsent(ktm, "390 Adventure", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(ktm, "390 Adventure X", "Adventure", "Petrol", 2023, 2024);
+        seedModelIfAbsent(ktm, "790 Adventure", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(ktm, "890 Adventure", "Adventure", "Petrol", 2021, 2024);
+        seedModelIfAbsent(ktm, "1290 Super Adventure", "Adventure", "Petrol", 2016, 2024);
+        seedModelIfAbsent(ktm, "Super Duke R 1290", "Roadster", "Petrol", 2016, 2024);
+
+        // ── KAWASAKI ─────────────────────────────────────────────────────────────
+        Manufacturer kawasaki = getOrCreateBrand("KAWASAKI", "Japan");
+        seedModelIfAbsent(kawasaki, "Z250", "Roadster", "Petrol", 2013, 2024);
+        seedModelIfAbsent(kawasaki, "Z400", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(kawasaki, "Z650", "Roadster", "Petrol", 2017, 2024);
+        seedModelIfAbsent(kawasaki, "Z900", "Roadster", "Petrol", 2017, 2024);
+        seedModelIfAbsent(kawasaki, "Z900RS", "Retro Roadster", "Petrol", 2018, 2024);
+        seedModelIfAbsent(kawasaki, "Ninja 300", "Sports", "Petrol", 2013, 2019);
+        seedModelIfAbsent(kawasaki, "Ninja 400", "Sports", "Petrol", 2018, 2024);
+        seedModelIfAbsent(kawasaki, "Ninja 650", "Sports", "Petrol", 2012, 2024);
+        seedModelIfAbsent(kawasaki, "Ninja 1000SX", "Sports Touring", "Petrol", 2020, 2024);
+        seedModelIfAbsent(kawasaki, "Ninja ZX-6R", "Superbike", "Petrol", 2001, 2024);
+        seedModelIfAbsent(kawasaki, "Ninja ZX-10R", "Superbike", "Petrol", 2004, 2024);
+        seedModelIfAbsent(kawasaki, "Ninja H2", "Hyperbike", "Petrol", 2015, 2024);
+        seedModelIfAbsent(kawasaki, "Versys 300", "Adventure", "Petrol", 2017, 2024);
+        seedModelIfAbsent(kawasaki, "Versys 650", "Adventure", "Petrol", 2010, 2024);
+        seedModelIfAbsent(kawasaki, "Versys 1000", "Adventure", "Petrol", 2012, 2024);
+        seedModelIfAbsent(kawasaki, "W175", "Retro", "Petrol", 2018, 2024);
+        seedModelIfAbsent(kawasaki, "Vulcan S", "Cruiser", "Petrol", 2015, 2024);
+        seedModelIfAbsent(kawasaki, "Eliminator 450", "Cruiser", "Petrol", 2023, 2024);
+
+        // ── JAWA ─────────────────────────────────────────────────────────────────
+        Manufacturer jawa = getOrCreateBrand("JAWA", "India");
+        seedModelIfAbsent(jawa, "Jawa 42", "Cruiser", "Petrol", 2018, 2024);
+        seedModelIfAbsent(jawa, "Jawa 42 FJ", "Cruiser", "Petrol", 2022, 2024);
+        seedModelIfAbsent(jawa, "Jawa Classic", "Cruiser", "Petrol", 2018, 2024);
+        seedModelIfAbsent(jawa, "Jawa Perak", "Bobber", "Petrol", 2019, 2024);
+        seedModelIfAbsent(jawa, "Jawa 350 OHC", "Roadster", "Petrol", 2023, 2024);
+        seedModelIfAbsent(jawa, "Yezdi Roadster", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(jawa, "Yezdi Adventure", "Adventure", "Petrol", 2022, 2024);
+        seedModelIfAbsent(jawa, "Yezdi Scrambler", "Scrambler", "Petrol", 2022, 2024);
+
+        // ── BENELLI ──────────────────────────────────────────────────────────────
+        Manufacturer benelli = getOrCreateBrand("BENELLI", "Italy");
+        seedModelIfAbsent(benelli, "Imperiale 400", "Cruiser", "Petrol", 2019, 2024);
+        seedModelIfAbsent(benelli, "TRK 502", "Adventure", "Petrol", 2017, 2024);
+        seedModelIfAbsent(benelli, "TRK 502X", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(benelli, "Leoncino 500", "Scrambler", "Petrol", 2019, 2024);
+        seedModelIfAbsent(benelli, "302R", "Sports", "Petrol", 2019, 2022);
+        seedModelIfAbsent(benelli, "TNT 300", "Roadster", "Petrol", 2016, 2020);
+        seedModelIfAbsent(benelli, "TNT 600", "Roadster", "Petrol", 2016, 2020);
+        seedModelIfAbsent(benelli, "BN 302R", "Sports", "Petrol", 2016, 2022);
+        seedModelIfAbsent(benelli, "Tornado 302R", "Sports", "Petrol", 2016, 2020);
+
+        // ── TRIUMPH ──────────────────────────────────────────────────────────────
+        Manufacturer triumph = getOrCreateBrand("TRIUMPH", "UK");
+        seedModelIfAbsent(triumph, "Speed 400", "Roadster", "Petrol", 2023, 2024);
+        seedModelIfAbsent(triumph, "Scrambler 400X", "Scrambler", "Petrol", 2023, 2024);
+        seedModelIfAbsent(triumph, "Trident 660", "Roadster", "Petrol", 2021, 2024);
+        seedModelIfAbsent(triumph, "Street Triple R", "Roadster", "Petrol", 2016, 2024);
+        seedModelIfAbsent(triumph, "Street Triple RS", "Roadster", "Petrol", 2017, 2024);
+        seedModelIfAbsent(triumph, "Tiger Sport 660", "Adventure", "Petrol", 2021, 2024);
+        seedModelIfAbsent(triumph, "Tiger 850 Sport", "Adventure", "Petrol", 2021, 2024);
+        seedModelIfAbsent(triumph, "Tiger 900 GT", "Adventure", "Petrol", 2020, 2024);
+        seedModelIfAbsent(triumph, "Tiger 900 Rally", "Adventure", "Petrol", 2020, 2024);
+        seedModelIfAbsent(triumph, "Tiger 1200", "Adventure", "Petrol", 2016, 2024);
+        seedModelIfAbsent(triumph, "Bonneville T100", "Retro", "Petrol", 2016, 2024);
+        seedModelIfAbsent(triumph, "Bonneville T120", "Retro", "Petrol", 2016, 2024);
+        seedModelIfAbsent(triumph, "Thruxton RS", "Cafe Racer", "Petrol", 2016, 2024);
+        seedModelIfAbsent(triumph, "Scrambler 1200 XC", "Scrambler", "Petrol", 2019, 2024);
+        seedModelIfAbsent(triumph, "Scrambler 1200 XE", "Scrambler", "Petrol", 2019, 2024);
+        seedModelIfAbsent(triumph, "Rocket 3", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(triumph, "Daytona 660", "Sports", "Petrol", 2023, 2024);
+        seedModelIfAbsent(triumph, "Speed Twin 900", "Retro", "Petrol", 2023, 2024);
+
+        // ── BMW MOTORRAD ─────────────────────────────────────────────────────────
+        Manufacturer bmw = getOrCreateBrand("BMW MOTORRAD", "Germany");
+        seedModelIfAbsent(bmw, "G 310 R", "Roadster", "Petrol", 2017, 2024);
+        seedModelIfAbsent(bmw, "G 310 GS", "Adventure", "Petrol", 2017, 2024);
+        seedModelIfAbsent(bmw, "F 900 R", "Roadster", "Petrol", 2020, 2024);
+        seedModelIfAbsent(bmw, "F 900 XR", "Adventure", "Petrol", 2020, 2024);
+        seedModelIfAbsent(bmw, "F 850 GS", "Adventure", "Petrol", 2018, 2024);
+        seedModelIfAbsent(bmw, "R 1250 GS", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(bmw, "R 1250 GS Adventure", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(bmw, "S 1000 RR", "Superbike", "Petrol", 2010, 2024);
+        seedModelIfAbsent(bmw, "S 1000 R", "Roadster", "Petrol", 2014, 2024);
+        seedModelIfAbsent(bmw, "S 1000 XR", "Adventure", "Petrol", 2015, 2024);
+        seedModelIfAbsent(bmw, "M 1000 RR", "Superbike", "Petrol", 2021, 2024);
+        seedModelIfAbsent(bmw, "R 18", "Cruiser", "Petrol", 2020, 2024);
+        seedModelIfAbsent(bmw, "CE 04", "Scooter", "Electric", 2022, 2024);
+
+        // ── DUCATI ───────────────────────────────────────────────────────────────
+        Manufacturer ducati = getOrCreateBrand("DUCATI", "Italy");
+        seedModelIfAbsent(ducati, "Monster", "Roadster", "Petrol", 2001, 2024);
+        seedModelIfAbsent(ducati, "Monster SP", "Roadster", "Petrol", 2023, 2024);
+        seedModelIfAbsent(ducati, "Scrambler Icon", "Scrambler", "Petrol", 2015, 2024);
+        seedModelIfAbsent(ducati, "Scrambler Desert Sled", "Scrambler", "Petrol", 2016, 2024);
+        seedModelIfAbsent(ducati, "Scrambler Nightshift", "Scrambler", "Petrol", 2021, 2024);
+        seedModelIfAbsent(ducati, "Panigale V2", "Superbike", "Petrol", 2020, 2024);
+        seedModelIfAbsent(ducati, "Panigale V4", "Superbike", "Petrol", 2018, 2024);
+        seedModelIfAbsent(ducati, "Panigale V4 R", "Superbike", "Petrol", 2019, 2024);
+        seedModelIfAbsent(ducati, "Multistrada V2", "Adventure", "Petrol", 2022, 2024);
+        seedModelIfAbsent(ducati, "Multistrada V4", "Adventure", "Petrol", 2021, 2024);
+        seedModelIfAbsent(ducati, "Multistrada V4 S", "Adventure", "Petrol", 2021, 2024);
+        seedModelIfAbsent(ducati, "Streetfighter V2", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(ducati, "Streetfighter V4", "Roadster", "Petrol", 2020, 2024);
+        seedModelIfAbsent(ducati, "Diavel V4", "Power Cruiser", "Petrol", 2023, 2024);
+        seedModelIfAbsent(ducati, "Hypermotard 950", "Supermoto", "Petrol", 2019, 2024);
+        seedModelIfAbsent(ducati, "DesertX", "Adventure", "Petrol", 2022, 2024);
+
+        // ── HARLEY-DAVIDSON ──────────────────────────────────────────────────────
+        Manufacturer harley = getOrCreateBrand("HARLEY-DAVIDSON", "USA");
+        seedModelIfAbsent(harley, "X440", "Roadster", "Petrol", 2023, 2024);
+        seedModelIfAbsent(harley, "Street 750", "Cruiser", "Petrol", 2015, 2022);
+        seedModelIfAbsent(harley, "Iron 883", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(harley, "Iron 1200", "Cruiser", "Petrol", 2018, 2024);
+        seedModelIfAbsent(harley, "Forty-Eight", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(harley, "Fat Boy", "Cruiser", "Petrol", 2001, 2024);
+        seedModelIfAbsent(harley, "Fat Bob", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(harley, "Sportster S", "Cruiser", "Petrol", 2021, 2024);
+        seedModelIfAbsent(harley, "Nightster", "Cruiser", "Petrol", 2022, 2024);
+        seedModelIfAbsent(harley, "Road Glide", "Touring", "Petrol", 2001, 2024);
+        seedModelIfAbsent(harley, "Road King", "Touring", "Petrol", 2001, 2024);
+        seedModelIfAbsent(harley, "Street Glide", "Touring", "Petrol", 2001, 2024);
+        seedModelIfAbsent(harley, "Electra Glide", "Touring", "Petrol", 2001, 2024);
+        seedModelIfAbsent(harley, "Breakout", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(harley, "Low Rider", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(harley, "Softail Standard", "Cruiser", "Petrol", 2020, 2024);
+        seedModelIfAbsent(harley, "LiveWire One", "Roadster", "Electric", 2021, 2024);
+
+        // ── APRILIA ──────────────────────────────────────────────────────────────
+        Manufacturer aprilia = getOrCreateBrand("APRILIA", "Italy");
+        seedModelIfAbsent(aprilia, "RS 457", "Sports", "Petrol", 2023, 2024);
+        seedModelIfAbsent(aprilia, "RS 660", "Sports", "Petrol", 2020, 2024);
+        seedModelIfAbsent(aprilia, "Tuono 660", "Roadster", "Petrol", 2021, 2024);
+        seedModelIfAbsent(aprilia, "RS4 125", "Sports", "Petrol", 2016, 2024);
+        seedModelIfAbsent(aprilia, "Storm 125", "Scooter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(aprilia, "SXR 125", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(aprilia, "SXR 160", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(aprilia, "SR 160", "Scooter", "Petrol", 2020, 2024);
+        seedModelIfAbsent(aprilia, "SR 125", "Scooter", "Petrol", 2019, 2024);
+        seedModelIfAbsent(aprilia, "Tuono V4", "Roadster", "Petrol", 2016, 2024);
+        seedModelIfAbsent(aprilia, "RSV4", "Superbike", "Petrol", 2016, 2024);
+
+        // ── VESPA / PIAGGIO ──────────────────────────────────────────────────────
+        Manufacturer vespa = getOrCreateBrand("VESPA", "Italy");
+        seedModelIfAbsent(vespa, "VX 125", "Scooter", "Petrol", 2012, 2024);
+        seedModelIfAbsent(vespa, "VXL 125", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(vespa, "VXL 150", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(vespa, "ZX 125", "Scooter", "Petrol", 2012, 2024);
+        seedModelIfAbsent(vespa, "ZX 150", "Scooter", "Petrol", 2012, 2024);
+        seedModelIfAbsent(vespa, "Notte 125", "Scooter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(vespa, "SXL 125", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(vespa, "SXL 150", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(vespa, "Elettrica", "Scooter", "Electric", 2019, 2024);
+        seedModelIfAbsent(vespa, "Primavera 125", "Scooter", "Petrol", 2016, 2024);
+        seedModelIfAbsent(vespa, "GTS 300", "Scooter", "Petrol", 2018, 2024);
+
+        // ── ATHER ────────────────────────────────────────────────────────────────
+        Manufacturer ather = getOrCreateBrand("ATHER", "India");
+        seedModelIfAbsent(ather, "450X", "Scooter", "Electric", 2019, 2024);
+        seedModelIfAbsent(ather, "450 Apex", "Scooter", "Electric", 2022, 2024);
+        seedModelIfAbsent(ather, "450S", "Scooter", "Electric", 2023, 2024);
+        seedModelIfAbsent(ather, "450 Plus", "Scooter", "Electric", 2021, 2024);
+        seedModelIfAbsent(ather, "Rizta", "Scooter", "Electric", 2024, 2024);
+
+        // ── OLA ELECTRIC ─────────────────────────────────────────────────────────
+        Manufacturer ola = getOrCreateBrand("OLA ELECTRIC", "India");
+        seedModelIfAbsent(ola, "S1", "Scooter", "Electric", 2021, 2024);
+        seedModelIfAbsent(ola, "S1 Air", "Scooter", "Electric", 2022, 2024);
+        seedModelIfAbsent(ola, "S1 Pro", "Scooter", "Electric", 2021, 2024);
+        seedModelIfAbsent(ola, "S1 X", "Scooter", "Electric", 2023, 2024);
+        seedModelIfAbsent(ola, "S1 X+", "Scooter", "Electric", 2023, 2024);
+        seedModelIfAbsent(ola, "Roadster", "Roadster", "Electric", 2024, 2024);
+        seedModelIfAbsent(ola, "Roadster Pro", "Roadster", "Electric", 2024, 2024);
+        seedModelIfAbsent(ola, "Roadster X", "Roadster", "Electric", 2024, 2024);
+
+        // ── REVOLT ───────────────────────────────────────────────────────────────
+        Manufacturer revolt = getOrCreateBrand("REVOLT", "India");
+        seedModelIfAbsent(revolt, "RV400", "Roadster", "Electric", 2019, 2024);
+        seedModelIfAbsent(revolt, "RV400 BRZ", "Roadster", "Electric", 2022, 2024);
+        seedModelIfAbsent(revolt, "RV1", "Roadster", "Electric", 2023, 2024);
+
+        // ── TORK ─────────────────────────────────────────────────────────────────
+        Manufacturer tork = getOrCreateBrand("TORK", "India");
+        seedModelIfAbsent(tork, "KRATOS R", "Roadster", "Electric", 2022, 2024);
+        seedModelIfAbsent(tork, "KRATOS", "Roadster", "Electric", 2022, 2024);
+
+        // ── ULTRAVIOLETTE ────────────────────────────────────────────────────────
+        Manufacturer uv = getOrCreateBrand("ULTRAVIOLETTE", "India");
+        seedModelIfAbsent(uv, "F77 Mach 2", "Sports", "Electric", 2023, 2024);
+        seedModelIfAbsent(uv, "F77", "Sports", "Electric", 2022, 2024);
+
+        // ── PURE EV ──────────────────────────────────────────────────────────────
+        Manufacturer pureEv = getOrCreateBrand("PURE EV", "India");
+        seedModelIfAbsent(pureEv, "ETrance Neo", "Scooter", "Electric", 2020, 2024);
+        seedModelIfAbsent(pureEv, "EPluto 7G", "Scooter", "Electric", 2020, 2024);
+        seedModelIfAbsent(pureEv, "EcoRider", "Scooter", "Electric", 2020, 2024);
+        seedModelIfAbsent(pureEv, "eTryst 350", "Roadster", "Electric", 2021, 2024);
+
+        // ── BOUNCE ───────────────────────────────────────────────────────────────
+        Manufacturer bounce = getOrCreateBrand("BOUNCE", "India");
+        seedModelIfAbsent(bounce, "Infinity E1", "Scooter", "Electric", 2022, 2024);
+
+        // ── AMPERE ───────────────────────────────────────────────────────────────
+        Manufacturer ampere = getOrCreateBrand("AMPERE", "India");
+        seedModelIfAbsent(ampere, "Magnus EX", "Scooter", "Electric", 2020, 2024);
+        seedModelIfAbsent(ampere, "Nexus", "Scooter", "Electric", 2023, 2024);
+        seedModelIfAbsent(ampere, "Primus", "Scooter", "Electric", 2022, 2024);
+        seedModelIfAbsent(ampere, "Zeal EX", "Scooter", "Electric", 2020, 2024);
+
+        // ── GREAVES ELECTRIC ─────────────────────────────────────────────────────
+        Manufacturer greaves = getOrCreateBrand("GREAVES ELECTRIC", "India");
+        seedModelIfAbsent(greaves, "Ampere Magnus", "Scooter", "Electric", 2019, 2024);
+
+        // ── PIAGGIO ──────────────────────────────────────────────────────────────
+        Manufacturer piaggio = getOrCreateBrand("PIAGGIO", "Italy");
+        seedModelIfAbsent(piaggio, "Medley 150", "Scooter", "Petrol", 2016, 2020);
+        seedModelIfAbsent(piaggio, "Liberty 125", "Scooter", "Petrol", 2016, 2020);
+
+        // ── MAHINDRA ─────────────────────────────────────────────────────────────
+        Manufacturer mahindra = getOrCreateBrand("MAHINDRA", "India");
+        seedModelIfAbsent(mahindra, "Mojo 300", "Touring", "Petrol", 2015, 2022);
+        seedModelIfAbsent(mahindra, "Gusto 110", "Scooter", "Petrol", 2014, 2019);
+        seedModelIfAbsent(mahindra, "Duro DZ", "Scooter", "Petrol", 2010, 2017);
+        seedModelIfAbsent(mahindra, "Rodeo RZ", "Scooter", "Petrol", 2009, 2017);
+        seedModelIfAbsent(mahindra, "Stallio", "Commuter", "Petrol", 2010, 2015);
+
+        // ── INDIAN MOTORCYCLE ────────────────────────────────────────────────────
+        Manufacturer indian = getOrCreateBrand("INDIAN MOTORCYCLE", "USA");
+        seedModelIfAbsent(indian, "Scout", "Cruiser", "Petrol", 2015, 2024);
+        seedModelIfAbsent(indian, "Scout Bobber", "Bobber", "Petrol", 2018, 2024);
+        seedModelIfAbsent(indian, "Chief", "Cruiser", "Petrol", 2016, 2024);
+        seedModelIfAbsent(indian, "Chieftain", "Touring", "Petrol", 2016, 2024);
+        seedModelIfAbsent(indian, "Roadmaster", "Touring", "Petrol", 2016, 2024);
+        seedModelIfAbsent(indian, "FTR 1200", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(indian, "Pursuit", "Touring", "Petrol", 2022, 2024);
+        seedModelIfAbsent(indian, "Challenger", "Touring", "Petrol", 2020, 2024);
+        seedModelIfAbsent(indian, "Sport Chief", "Cruiser", "Petrol", 2022, 2024);
+
+        // ── MOTO GUZZI ───────────────────────────────────────────────────────────
+        Manufacturer motoGuzzi = getOrCreateBrand("MOTO GUZZI", "Italy");
+        seedModelIfAbsent(motoGuzzi, "V7", "Retro", "Petrol", 2016, 2024);
+        seedModelIfAbsent(motoGuzzi, "V9 Bobber", "Bobber", "Petrol", 2016, 2024);
+        seedModelIfAbsent(motoGuzzi, "V85 TT", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(motoGuzzi, "V100 Mandello", "Sport Touring", "Petrol", 2022, 2024);
+
+        // ── NORTON ───────────────────────────────────────────────────────────────
+        Manufacturer norton = getOrCreateBrand("NORTON", "UK");
+        seedModelIfAbsent(norton, "V4CR", "Cafe Racer", "Petrol", 2023, 2024);
+        seedModelIfAbsent(norton, "Commando 961", "Retro", "Petrol", 2016, 2022);
+
+        // ── HUSQVARNA ────────────────────────────────────────────────────────────
+        Manufacturer husqvarna = getOrCreateBrand("HUSQVARNA", "Sweden");
+        seedModelIfAbsent(husqvarna, "Svartpilen 250", "Scrambler", "Petrol", 2021, 2024);
+        seedModelIfAbsent(husqvarna, "Vitpilen 250", "Cafe Racer", "Petrol", 2021, 2024);
+        seedModelIfAbsent(husqvarna, "Svartpilen 401", "Scrambler", "Petrol", 2019, 2024);
+        seedModelIfAbsent(husqvarna, "Vitpilen 401", "Cafe Racer", "Petrol", 2019, 2024);
+
+        // ── CFMOTO ───────────────────────────────────────────────────────────────
+        Manufacturer cfmoto = getOrCreateBrand("CFMOTO", "China");
+        seedModelIfAbsent(cfmoto, "300NK", "Roadster", "Petrol", 2021, 2024);
+        seedModelIfAbsent(cfmoto, "650NK", "Roadster", "Petrol", 2019, 2024);
+        seedModelIfAbsent(cfmoto, "650MT", "Adventure", "Petrol", 2019, 2024);
+        seedModelIfAbsent(cfmoto, "300SR", "Sports", "Petrol", 2021, 2024);
+        seedModelIfAbsent(cfmoto, "400NK", "Roadster", "Petrol", 2022, 2024);
+        seedModelIfAbsent(cfmoto, "800MT", "Adventure", "Petrol", 2022, 2024);
+
+        // ── ZONTES ───────────────────────────────────────────────────────────────
+        Manufacturer zontes = getOrCreateBrand("ZONTES", "China");
+        seedModelIfAbsent(zontes, "350R", "Sports", "Petrol", 2022, 2024);
+        seedModelIfAbsent(zontes, "350T", "Adventure", "Petrol", 2022, 2024);
+        seedModelIfAbsent(zontes, "350X", "Crossover", "Petrol", 2022, 2024);
+
+        // ── KEEWAY ───────────────────────────────────────────────────────────────
+        Manufacturer keeway = getOrCreateBrand("KEEWAY", "China");
+        seedModelIfAbsent(keeway, "SR125", "Scooter", "Petrol", 2021, 2024);
+        seedModelIfAbsent(keeway, "V302C", "Cruiser", "Petrol", 2022, 2024);
+        seedModelIfAbsent(keeway, "K-Light 202", "Cruiser", "Petrol", 2022, 2024);
+
+        System.out.println("[DataSeeder] Bike model seeding complete.");
     }
 
     private void seedWorker(String email, String password, String firstName, String lastName, String empId, String dept, String desig) {
@@ -159,15 +645,21 @@ public class DataSeeder {
         workerRepository.save(w);
     }
 
-    private Manufacturer seedBrand(String name, String country) {
-        long id = sequenceGenerator.generateSequence("manufacturers");
-        Manufacturer m = Manufacturer.builder().id(id).name(name).country(country).active(true).build();
-        return manufacturerRepository.save(m);
+    private Manufacturer getOrCreateBrand(String name, String country) {
+        return manufacturerRepository.findByName(name).orElseGet(() -> {
+            long id = sequenceGenerator.generateSequence("manufacturers");
+            Manufacturer m = Manufacturer.builder().id(id).name(name).country(country).active(true).build();
+            return manufacturerRepository.save(m);
+        });
     }
 
-    private BikeModel seedModel(Manufacturer m, String modelName, String category, String fuelType, int startYear, int endYear) {
+    private void seedModelIfAbsent(Manufacturer m, String modelName, String category, String fuelType, int startYear, int endYear) {
+        boolean exists = bikeModelRepository.findByManufacturerIdAndModelName(m.getId(), modelName).isPresent();
+        if (exists) return;
+
         long modelId = sequenceGenerator.generateSequence("bike_models");
-        BikeModel model = BikeModel.builder().id(modelId).manufacturer(m).modelName(modelName).category(category).fuelType(fuelType).active(true).build();
+        BikeModel model = BikeModel.builder().id(modelId).manufacturer(m).modelName(modelName)
+                .category(category).fuelType(fuelType).active(true).build();
         model = bikeModelRepository.save(model);
 
         for (int y = startYear; y <= endYear; y++) {
@@ -176,10 +668,7 @@ public class DataSeeder {
         }
 
         long varId = sequenceGenerator.generateSequence("bike_variants");
-        BikeVariant variant = BikeVariant.builder().id(varId).bikeModel(model).variantName("Standard").active(true).build();
-        bikeVariantRepository.save(variant);
-
-        return model;
+        bikeVariantRepository.save(BikeVariant.builder().id(varId).bikeModel(model).variantName("Standard").active(true).build());
     }
 
     private void ensureDefaultUsersActive() {
