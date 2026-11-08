@@ -8,6 +8,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.autoconsultancy.exception.BadRequestException;
 import jakarta.mail.internet.MimeMessage;
 
 /**
@@ -47,10 +48,12 @@ public class EmailService {
 
         } catch (MailException e) {
             log.error("SMTP error sending OTP to {}: {}", maskEmail(toEmail), e.getMessage());
-            throw new RuntimeException("Failed to send OTP email. Please try again.", e);
+            throw new com.autoconsultancy.exception.BadRequestException(
+                "Failed to send OTP email. Please check your Gmail App Password configuration.");
         } catch (Exception e) {
             log.error("Unexpected error sending OTP to {}: {}", maskEmail(toEmail), e.getMessage());
-            throw new RuntimeException("Failed to send OTP email. Please try again.", e);
+            throw new com.autoconsultancy.exception.BadRequestException(
+                "Failed to send OTP email. Please try again.");
         }
     }
 

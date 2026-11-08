@@ -57,6 +57,14 @@ public class DataSeeder {
         }
         // ─────────────────────────────────────────────────────────────────────
 
+        // ── Always sync admin password from env var ───────────────────────────
+        userRepository.findByEmail(adminEmail).ifPresent(existingAdmin -> {
+            existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
+            userRepository.save(existingAdmin);
+            System.out.println("[DataSeeder] Admin password synced from SEED_ADMIN_PASSWORD env var.");
+        });
+        // ─────────────────────────────────────────────────────────────────────
+
         if (!userRepository.findByEmail(adminEmail).isPresent()) {
             long adminId = sequenceGenerator.generateSequence("users");
             User admin = User.builder()
