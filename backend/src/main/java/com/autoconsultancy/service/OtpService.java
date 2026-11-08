@@ -94,7 +94,9 @@ public class OtpService {
 
         otpRepository.save(record);
 
-        // Send email — if this fails, the saved record will auto-expire via TTL
+        // Send email asynchronously — the HTTP response returns immediately.
+        // If SMTP fails, the saved record will auto-expire via TTL.
+        // Errors are logged server-side; the admin can use Resend OTP if needed.
         emailService.sendOtpEmail(adminEmail, rawOtp);
         // rawOtp goes out of scope — no longer in memory after return
 

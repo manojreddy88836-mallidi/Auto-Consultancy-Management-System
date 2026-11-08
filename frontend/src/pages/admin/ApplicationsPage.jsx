@@ -7,7 +7,7 @@ import {
 } from '../../api/applicationApi';
 import { getWorkers } from '../../api/adminApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 const ALL_STATUSES = [
   'DRAFT','SUBMITTED','UNDER_REVIEW','DOCUMENT_VERIFICATION',

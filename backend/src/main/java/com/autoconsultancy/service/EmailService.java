@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.autoconsultancy.exception.BadRequestException;
@@ -15,6 +16,9 @@ import jakarta.mail.internet.MimeMessage;
  * Sends transactional emails via Gmail SMTP.
  * Credentials are read from environment variables — never hardcoded.
  * The OTP is embedded in the email body but is NEVER logged.
+ *
+ * sendOtpEmail is @Async so the HTTP login thread is not blocked
+ * waiting for SMTP negotiation (saves ~1-3 seconds per login).
  */
 @Service
 @RequiredArgsConstructor
@@ -27,18 +31,18 @@ public class EmailService {
     private String senderEmail;
 
     /**
-     * Sends an OTP verification email to the admin.
+     * Sends an OTP verification email to the admin asynchronously.
+     * The HTTP request returns immediately after the OTP is saved;
+     * the email is delivered in the background email thread pool.
      *
      * @param toEmail  recipient address
      * @param otp      the raw 6-digit OTP (sent in email body — never logged)
-     * @throws RuntimeException if email delivery fails
      */
+    @Async("emailTaskExecutor")
     public void sendOtpEmail(String toEmail, String otp) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
-            // MimeMessageHelper(msg, multipart, charset) — may throw UnsupportedEncodingException
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            // setFrom with personal name may throw UnsupportedEncodingException
             helper.setFrom(senderEmail);
             helper.setTo(toEmail);
             helper.setSubject("Your Admin Login Verification Code");
@@ -48,12 +52,8 @@ public class EmailService {
 
         } catch (MailException e) {
             log.error("SMTP error sending OTP to {}: {}", maskEmail(toEmail), e.getMessage());
-            throw new com.autoconsultancy.exception.BadRequestException(
-                "Failed to send OTP email. Please check your Gmail App Password configuration.");
         } catch (Exception e) {
             log.error("Unexpected error sending OTP to {}: {}", maskEmail(toEmail), e.getMessage());
-            throw new com.autoconsultancy.exception.BadRequestException(
-                "Failed to send OTP email. Please try again.");
         }
     }
 

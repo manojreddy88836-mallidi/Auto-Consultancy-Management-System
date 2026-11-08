@@ -64,7 +64,13 @@ const LoginPage = () => {
         }
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || 'Invalid email or password';
+      // Network error (backend down / unreachable) vs API error (wrong credentials)
+      let msg;
+      if (!err?.response) {
+        msg = 'Cannot reach server. Please check your connection or try again later.';
+      } else {
+        msg = err.response?.data?.message || 'Invalid email or password';
+      }
       setError(msg);
       toast.error('Login failed');
     } finally {

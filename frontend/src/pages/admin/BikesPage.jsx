@@ -15,7 +15,7 @@ import {
 import { getBikeModelsAdmin } from '../../api/bikeModelApi';
 import { getAllBrands } from '../../api/brandApi';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 const PAGE_SIZE = 12;
 
 const SALE_STATUS_META = {

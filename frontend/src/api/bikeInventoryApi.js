@@ -1,6 +1,5 @@
 import api from './axios';
-
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../utils/imageUrl';
 
 // ── Public (no auth) ─────────────────────────────────────────────────────────
 export const getAvailableBikes = (params) =>

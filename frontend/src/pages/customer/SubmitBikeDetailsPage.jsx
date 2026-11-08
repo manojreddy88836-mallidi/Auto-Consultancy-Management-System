@@ -11,7 +11,7 @@ import { uploadDocument } from '../../api/documentApi';
 import { INDIAN_STATES, IDENTITY_PROOF_TYPES, PAYMENT_METHODS } from '../../utils/constants';
 import { calculateEMI, fmtINR } from '../../utils/emiCalculator';
 
-const BACKEND_BASE = 'http://localhost:8080';
+import { BACKEND_BASE } from '../../utils/imageUrl';
 
 // ── Steps ──────────────────────────────────────────────────────────────────
 const STEPS = [

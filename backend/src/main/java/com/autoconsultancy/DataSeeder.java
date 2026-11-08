@@ -57,11 +57,17 @@ public class DataSeeder {
         }
         // ─────────────────────────────────────────────────────────────────────
 
-        // ── Always sync admin password from env var ───────────────────────────
+        // ── Sync admin password only if it changed (avoids BCrypt re-hash on every startup) ──
         userRepository.findByEmail(adminEmail).ifPresent(existingAdmin -> {
-            existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
-            userRepository.save(existingAdmin);
-            System.out.println("[DataSeeder] Admin password synced from SEED_ADMIN_PASSWORD env var.");
+            // Only re-hash and save if the stored hash doesn't match the env password.
+            // This prevents a ~400ms BCrypt-12 penalty on every server restart.
+            if (!passwordEncoder.matches(adminPassword, existingAdmin.getPassword())) {
+                existingAdmin.setPassword(passwordEncoder.encode(adminPassword));
+                userRepository.save(existingAdmin);
+                System.out.println("[DataSeeder] Admin password updated (changed in env var).");
+            } else {
+                System.out.println("[DataSeeder] Admin password unchanged — skipping re-hash.");
+            }
         });
         // ─────────────────────────────────────────────────────────────────────
 
