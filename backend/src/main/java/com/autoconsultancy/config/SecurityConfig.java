@@ -60,7 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/bike-models/images/*/file").permitAll()
                         .requestMatchers("/api/bikes/public/**").permitAll()
                         .requestMatchers("/api/bikes/*/images/*/file").permitAll()
-                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/", "/api/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/documents/**").authenticated()
                         .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/worker/**").hasAuthority("WORKER")
@@ -98,6 +98,7 @@ public class SecurityConfig {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
+        return new BCryptPasswordEncoder(10);
     }
 }
+

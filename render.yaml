@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: auto-consultancy-backend
+    runtime: java
+    # Render uses the PORT env var automatically — do NOT hardcode a port here
+    # application.properties reads: server.port=${PORT:10000}
+    buildCommand: cd backend && mvn clean package -DskipTests -q --no-transfer-progress
+    startCommand: java -XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -Djava.security.egd=file:/dev/./urandom -jar backend/target/backend-0.0.1-SNAPSHOT.jar
+    healthCheckPath: /api/health
+    # Environment variables — set secrets in Render Dashboard, NOT here
+    envVars:
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0"
+      - key: SPRING_PROFILES_ACTIVE
+        value: "production"
+      # Set these secrets in Render Dashboard:
+      # MONGO_URI         → your MongoDB Atlas connection string
+      # JWT_SECRET        → 64+ char random secret
+      # MAIL_PASSWORD     → Gmail App Password
+      # SEED_ADMIN_PASSWORD → admin login password
+      # ADMIN_EMAILS      → comma-separated admin emails
+      # CORS_ALLOWED_ORIGINS → your frontend URL on Render

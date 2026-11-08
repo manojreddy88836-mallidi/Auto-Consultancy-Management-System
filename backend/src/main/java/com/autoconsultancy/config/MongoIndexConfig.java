@@ -4,17 +4,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.CompoundIndexDefinition;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.index.IndexOperations;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import org.bson.Document;
 
 /**
  * MongoIndexConfig — creates MongoDB indexes on startup.
+ *
+ * RENDER/ATLAS OPTIMIZATION: Index creation runs ASYNC so it does NOT block
+ * application startup. Render detects the port immediately after Tomcat starts;
+ * we don't want 2-3 seconds of index creation to delay that detection.
  *
  * These indexes are idempotent (ensureIndex). They are critical for:
  * - Applications list page (status filter, createdAt sort, search)
@@ -30,18 +36,27 @@ public class MongoIndexConfig {
 
     private final MongoTemplate mongoTemplate;
 
+    /**
+     * Runs AFTER ApplicationReadyEvent on a background thread (via @Async).
+     * This means the port is already bound and Render's health checker can
+     * hit /api/health before indexes are created — which is fine.
+     * Order(10) ensures this runs after DataSeeder (default order).
+     */
     @EventListener(ApplicationReadyEvent.class)
+    @Async("emailTaskExecutor")
+    @Order(10)
     public void ensureIndexes() {
         try {
+            log.info("[MongoIndex] Starting async index creation...");
             createApplicationIndexes();
             createNotificationIndexes();
             createWorkerTaskIndexes();
             createBikeInventoryIndexes();
             createCustomerIndexes();
             createBikeInventoryImageIndexes();
-            log.info("MongoDB indexes ensured successfully.");
+            log.info("[MongoIndex] All MongoDB indexes ensured successfully.");
         } catch (Exception e) {
-            log.warn("Failed to ensure MongoDB indexes (non-fatal): {}", e.getMessage());
+            log.warn("[MongoIndex] Failed to ensure MongoDB indexes (non-fatal): {}", e.getMessage());
         }
     }
 
@@ -75,7 +90,7 @@ public class MongoIndexConfig {
             log.debug("applicationNumber index already exists with different settings, skipping: {}", ex.getMessage());
         }
 
-        log.debug("Application indexes ensured.");
+        log.debug("[MongoIndex] Application indexes ensured.");
     }
 
     private void createNotificationIndexes() {
@@ -91,7 +106,7 @@ public class MongoIndexConfig {
                 new Document("user.id", 1).append("createdAt", -1))
                 .named("idx_notifications_userId_createdAt"));
 
-        log.debug("Notification indexes ensured.");
+        log.debug("[MongoIndex] Notification indexes ensured.");
     }
 
     private void createWorkerTaskIndexes() {
@@ -113,7 +128,7 @@ public class MongoIndexConfig {
         // Used by: sort, admin listing
         ops.ensureIndex(new Index().on("createdAt", Sort.Direction.DESC).named("idx_workertasks_createdAt"));
 
-        log.debug("WorkerTask indexes ensured.");
+        log.debug("[MongoIndex] WorkerTask indexes ensured.");
     }
 
     private void createBikeInventoryIndexes() {
@@ -128,9 +143,14 @@ public class MongoIndexConfig {
                 .named("idx_bikeinventory_active_saleStatus"));
 
         // Used by: findByActiveTrueAndModelId
-        ops.ensureIndex(new CompoundIndexDefinition(
-                new Document("active", 1).append("bikeModel.id", 1))
-                .named("idx_bikeinventory_active_modelId"));
+        try {
+            ops.ensureIndex(new CompoundIndexDefinition(
+                    new Document("active", 1).append("bikeModel.id", 1))
+                    .named("idx_bikeinventory_active_modelId"));
+        } catch (Exception ex) {
+            log.debug("[MongoIndex] idx_bikeinventory_active_modelId already exists with different name, skipping: {}",
+                    ex.getMessage());
+        }
 
         // Used by: findByActiveTrueAndManufacturerId
         ops.ensureIndex(new CompoundIndexDefinition(
@@ -140,7 +160,7 @@ public class MongoIndexConfig {
         // Used by: countBySaleStatus
         ops.ensureIndex(new Index().on("saleStatus", Sort.Direction.ASC).named("idx_bikeinventory_saleStatus"));
 
-        log.debug("BikeInventory indexes ensured.");
+        log.debug("[MongoIndex] BikeInventory indexes ensured.");
     }
 
     private void createCustomerIndexes() {
@@ -149,7 +169,7 @@ public class MongoIndexConfig {
         // Used by: countNewThisMonth (createdAt range query)
         ops.ensureIndex(new Index().on("createdAt", Sort.Direction.DESC).named("idx_customers_createdAt"));
 
-        log.debug("Customer indexes ensured.");
+        log.debug("[MongoIndex] Customer indexes ensured.");
     }
 
     private void createBikeInventoryImageIndexes() {
@@ -160,6 +180,6 @@ public class MongoIndexConfig {
                 new Document("bikeInventory.id", 1).append("primary", -1))
                 .named("idx_bikeimages_inventoryId_primary"));
 
-        log.debug("BikeInventoryImage indexes ensured.");
+        log.debug("[MongoIndex] BikeInventoryImage indexes ensured.");
     }
 }
