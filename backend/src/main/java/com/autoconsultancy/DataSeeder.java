@@ -4,8 +4,10 @@ import com.autoconsultancy.entity.*;
 import com.autoconsultancy.repository.*;
 import com.autoconsultancy.service.SequenceGeneratorService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DataSeeder {
 
     private final UserRepository userRepository;
@@ -45,6 +48,7 @@ public class DataSeeder {
     private String workerPassword;
 
     @EventListener(ApplicationReadyEvent.class)
+    @Async("emailTaskExecutor")
     public void seedData() {
         List<String> adminEmails = getAdminEmails();
         // Use the first admin email as the primary (for migration logic)
@@ -106,7 +110,20 @@ public class DataSeeder {
 
         ensureDefaultUsersActive();
 
-        seedAllBrandsAndModels();
+        // ── FAST-PATH: skip 558 DB queries if models already seeded ─────────────
+        // On Render restarts (existing Atlas DB): exits in <100ms (single count query)
+        // On first deploy (empty Atlas DB): runs full seed in background thread
+        long existingModels = bikeModelRepository.count();
+        if (existingModels >= 558) {
+            log.info("[DataSeeder] Fast-path: {} models already in DB — skipping full seed.", existingModels);
+        } else {
+            log.info("[DataSeeder] {} models in DB (need 558) — running full seed...", existingModels);
+            seedAllBrandsAndModels();
+        }
+
+        long totalModels = bikeModelRepository.count();
+        long totalBrands = manufacturerRepository.count();
+        log.info("[DataSeeder] Done. DB has {} models across {} brands.", totalModels, totalBrands);
     }
 
     /**
@@ -836,7 +853,7 @@ public class DataSeeder {
 
         long totalModels = bikeModelRepository.count();
         long totalBrands = manufacturerRepository.count();
-        System.out.println("[DataSeeder] Seeding complete. DB now has: " + totalModels + " models across " + totalBrands + " brands.");
+        log.info("[DataSeeder] All brands and models seeded.");
     }
 
     private void seedWorker(String email, String password, String firstName, String lastName, String empId, String dept, String desig) {
